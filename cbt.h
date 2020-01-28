@@ -9,14 +9,14 @@ by Jonathan Dupuy
    define CBT_MEMSET(x, value, num) to use your own memset routine
 */
 
-#ifndef cbt_INCLUDE_cbt_H
-#define cbt_INCLUDE_cbt_H
+#ifndef CBT_INCLUDE_CBT_H
+#define CBT_INCLUDE_CBT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef cbt_STATIC
+#ifdef CBT_STATIC
 #define CBTDEF static
 #else
 #define CBTDEF extern
@@ -92,11 +92,9 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 //
 //
 //// end header file ///////////////////////////////////////////////////////////
-#endif // cbt_INCLUDE_cbt_H
+#endif // CBT_INCLUDE_CBT_H
 
-
-#if 1
-//#ifdef cbt_IMPLEMENTATION
+#ifdef CBT_IMPLEMENTATION
 
 #ifndef CBT_ASSERT
 #    include <assert.h>
@@ -888,9 +886,5 @@ CBTDEF void cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater)
 
     cbt__ComputeSumReduction(tree);
 }
-
-
 #endif
-
-
 
