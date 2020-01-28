@@ -2,20 +2,21 @@
 by Jonathan Dupuy
 
    INTERFACING
-   define CBT_ASSERT(x) to avoid using assert.h.
    define CBT_LOG(format, ...) to use your own logger (default prints to stdout)
+   define CBT_ASSERT(x) to avoid using assert.h
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
+   define CBT_MEMSET(x, value, num) to use your own memset routine
 */
 
-#ifndef CBT_INCLUDE_CBT_H
-#define CBT_INCLUDE_CBT_H
+#ifndef cbt_INCLUDE_cbt_H
+#define cbt_INCLUDE_cbt_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef CBT_STATIC
+#ifdef cbt_STATIC
 #define CBTDEF static
 #else
 #define CBTDEF extern
@@ -24,64 +25,64 @@ extern "C" {
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct CBT_Tree CBT_Tree;
+typedef struct cbt_Tree cbt_Tree;
 typedef struct {
     uint32_t id;
     int32_t depth;
-} CBT_Node;
+} cbt_Node;
 
 // create / destroy tree
-CBTDEF CBT_Tree *CBT_Create(int32_t maxDepth);
-CBTDEF CBT_Tree *CBT_CreateMinMax(int32_t minDepth,
+CBTDEF cbt_Tree *cbt_Create(int32_t maxDepth);
+CBTDEF cbt_Tree *cbt_CreateMinMax(int32_t minDepth,
                                   int32_t maxDepth);
-CBTDEF CBT_Tree *CBT_CreateMinMaxDepth(int32_t minDepth,
+CBTDEF cbt_Tree *cbt_CreateMinMaxDepth(int32_t minDepth,
                                        int32_t maxDepth,
                                        int32_t depth);
-CBTDEF void CBT_Release(CBT_Tree *tree);
+CBTDEF void cbt_Release(cbt_Tree *tree);
 
 // loaders
-CBTDEF void CBT_ResetToMinDepth(CBT_Tree *tree);
-CBTDEF void CBT_ResetToMaxDepth(CBT_Tree *tree);
-CBTDEF void CBT_ResetToDepth(CBT_Tree *tree,
+CBTDEF void cbt_ResetToMinDepth(cbt_Tree *tree);
+CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree);
+CBTDEF void cbt_ResetToDepth(cbt_Tree *tree,
                              int32_t depth);
 
 // manipulation
-CBTDEF void CBT_SplitNode_Fast(CBT_Tree *tree,
-                               const CBT_Node node);
-CBTDEF void CBT_SplitNode(CBT_Tree *tree,
-                          const CBT_Node node);
-CBTDEF void CBT_MergeNode_Fast(CBT_Tree *tree,
-                               const CBT_Node node);
-CBTDEF void CBT_MergeNode(CBT_Tree *tree,
-                          const CBT_Node node);
-typedef void (*CBT_UpdateCallback)(CBT_Tree *tree, const CBT_Node node);
-CBTDEF void CBT_Update(CBT_Tree *tree, CBT_UpdateCallback updater);
+CBTDEF void cbt_SplitNode_Fast(cbt_Tree *tree,
+                               const cbt_Node node);
+CBTDEF void cbt_SplitNode(cbt_Tree *tree,
+                          const cbt_Node node);
+CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree,
+                               const cbt_Node node);
+CBTDEF void cbt_MergeNode(cbt_Tree *tree,
+                          const cbt_Node node);
+typedef void (*cbt_UpdateCallback)(cbt_Tree *tree, const cbt_Node node);
+CBTDEF void cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater);
 
 // O(1) queries
-CBTDEF int32_t CBT_MinDepth(const CBT_Tree *tree);
-CBTDEF int32_t CBT_MaxDepth(const CBT_Tree *tree);
-CBTDEF int32_t CBT_NodeCount(const CBT_Tree *tree);
-CBTDEF bool CBT_IsLeafNode(const CBT_Tree *tree, const CBT_Node node);
-CBTDEF bool CBT_IsRootNode(const CBT_Tree *tree, const CBT_Node node);
-CBTDEF bool CBT_IsCeilNode(const CBT_Tree *tree, const CBT_Node node);
-CBTDEF bool CBT_IsNullNode(                      const CBT_Node node);
+CBTDEF int32_t cbt_MinDepth(const cbt_Tree *tree);
+CBTDEF int32_t cbt_MaxDepth(const cbt_Tree *tree);
+CBTDEF int32_t cbt_NodeCount(const cbt_Tree *tree);
+CBTDEF bool cbt_IsLeafNode(const cbt_Tree *tree, const cbt_Node node);
+CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node);
+CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node);
+CBTDEF bool cbt_IsNullNode(                      const cbt_Node node);
 
 // node constructors
-CBTDEF CBT_Node CBT_ParentNode(const CBT_Node node);
-CBTDEF CBT_Node CBT_SiblingNode(const CBT_Node node);
-CBTDEF CBT_Node CBT_LeftSiblingNode(const CBT_Node node);
-CBTDEF CBT_Node CBT_RightSiblingNode(const CBT_Node node);
-CBTDEF CBT_Node CBT_LeftChildNode(const CBT_Node node);
-CBTDEF CBT_Node CBT_RightChildNode(const CBT_Node node);
+CBTDEF cbt_Node cbt_ParentNode(const cbt_Node node);
+CBTDEF cbt_Node cbt_SiblingNode(const cbt_Node node);
+CBTDEF cbt_Node cbt_LeftSiblingNode(const cbt_Node node);
+CBTDEF cbt_Node cbt_RightSiblingNode(const cbt_Node node);
+CBTDEF cbt_Node cbt_LeftChildNode(const cbt_Node node);
+CBTDEF cbt_Node cbt_RightChildNode(const cbt_Node node);
 
 // O(depth) queries
-CBTDEF CBT_Node CBT_DecodeNode(const CBT_Tree *tree, int32_t handle);
-CBTDEF int32_t CBT_EncodeNode(const CBT_Tree *tree, const CBT_Node node);
+CBTDEF cbt_Node cbt_DecodeNode(const cbt_Tree *tree, int32_t handle);
+CBTDEF int32_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node);
 
 // serialization
-CBTDEF int32_t CBT_HeapByteSize(const CBT_Tree *tree);
-CBTDEF const char *CBT_GetHeap(const CBT_Tree *tree);
-CBTDEF void CBT_SetHeap(CBT_Tree *tree, const char *heap);
+CBTDEF int32_t cbt_HeapByteSize(const cbt_Tree *tree);
+CBTDEF const char *cbt_GetHeap(const cbt_Tree *tree);
+CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 
 
 #ifdef __cplusplus
@@ -91,11 +92,11 @@ CBTDEF void CBT_SetHeap(CBT_Tree *tree, const char *heap);
 //
 //
 //// end header file ///////////////////////////////////////////////////////////
-#endif // CBT_INCLUDE_CBT_H
+#endif // cbt_INCLUDE_cbt_H
 
 
 #if 1
-//#ifdef CBT_IMPLEMENTATION
+//#ifdef cbt_IMPLEMENTATION
 
 #ifndef CBT_ASSERT
 #    include <assert.h>
@@ -126,7 +127,7 @@ CBTDEF void CBT_SetHeap(CBT_Tree *tree, const char *heap);
  * MinValue -- Returns the minimum value between two inputs
  *
  */
-static inline uint32_t CBT__MinValue(uint32_t a, uint32_t b)
+static inline uint32_t cbt__MinValue(uint32_t a, uint32_t b)
 {
     return a < b ? a : b;
 }
@@ -137,18 +138,14 @@ static inline uint32_t CBT__MinValue(uint32_t a, uint32_t b)
  *
  */
 static void
-CBT__SetBitValue(uint32_t *bitField, int32_t bitID, uint32_t bitValue)
+cbt__SetBitValue(uint32_t *bitField, int32_t bitID, uint32_t bitValue)
 {
     const uint32_t bitMask = ~(1u << bitID);
 
-#if 0
-    (*bitField) = (*bitField & bitMask) | (bitValue << bitID);
-#else
 #pragma omp atomic
     (*bitField)&= bitMask;
 #pragma omp atomic
     (*bitField)|= (bitValue << bitID);
-#endif
 }
 
 
@@ -157,7 +154,7 @@ CBT__SetBitValue(uint32_t *bitField, int32_t bitID, uint32_t bitValue)
  *
  */
 static inline void
-CBT__BitFieldInsert(
+cbt__BitFieldInsert(
     uint32_t *bitField,
     int32_t  bitOffset,
     int32_t  bitCount,
@@ -165,14 +162,10 @@ CBT__BitFieldInsert(
 ) {
     CBT_ASSERT(bitOffset < 32 && bitCount <= 32 && bitOffset + bitCount <= 32);
     uint32_t bitMask = ~(~(0xFFFFFFFFu << bitCount) << bitOffset);
-#if 0
-    (*bitField) = (*bitField & bitMask) | (bitData << bitOffset);
-#else
 #pragma omp atomic
     (*bitField)&= bitMask;
 #pragma omp atomic
     (*bitField)|= (bitData << bitOffset);
-#endif
 }
 
 
@@ -182,7 +175,7 @@ CBT__BitFieldInsert(
  *
  */
 static inline uint32_t
-CBT__BitFieldExtract(
+cbt__BitFieldExtract(
     const uint32_t bitField,
     int32_t bitOffset,
     int32_t bitCount
@@ -198,7 +191,7 @@ CBT__BitFieldExtract(
  * Parallel Binary Tree Data-Structure
  *
  */
-struct CBT_Tree {
+struct cbt_Tree {
     uint32_t *heap;
     int32_t minDepth,
             maxDepth;
@@ -209,9 +202,9 @@ struct CBT_Tree {
  * CreateNode -- Constructor for the Node data structure
  *
  */
-CBT_Node CBT__CreateNode(uint32_t id, int32_t depth)
+cbt_Node cbt__CreateNode(uint32_t id, int32_t depth)
 {
-    CBT_Node node;
+    cbt_Node node;
 
     node.id = id;
     node.depth = depth;
@@ -224,7 +217,7 @@ CBT_Node CBT__CreateNode(uint32_t id, int32_t depth)
  * IsCeilNode -- Checks if a node is a ceil node, i.e., that can not split further
  *
  */
-CBTDEF bool CBT_IsCeilNode(const CBT_Tree *tree, const CBT_Node node)
+CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node)
 {
     return (node.depth == tree->maxDepth);
 }
@@ -234,7 +227,7 @@ CBTDEF bool CBT_IsCeilNode(const CBT_Tree *tree, const CBT_Node node)
  * IsRootNode -- Checks if a node is a root node
  *
  */
-CBTDEF bool CBT_IsRootNode(const CBT_Tree *tree, const CBT_Node node)
+CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node)
 {
     return (node.depth == tree->minDepth);
 }
@@ -244,7 +237,7 @@ CBTDEF bool CBT_IsRootNode(const CBT_Tree *tree, const CBT_Node node)
  * IsNullNode -- Checks if a node is a null node
  *
  */
-CBTDEF bool CBT_IsNullNode(const CBT_Node node)
+CBTDEF bool cbt_IsNullNode(const cbt_Node node)
 {
     return (node.id == 0);
 }
@@ -254,14 +247,14 @@ CBTDEF bool CBT_IsNullNode(const CBT_Node node)
  * ParentNode -- Computes the parent of the input node
  *
  */
-static CBT_Node CBT__ParentNode_Fast(const CBT_Node node)
+static cbt_Node cbt__ParentNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id >> 1u, node.depth - 1);
+    return cbt__CreateNode(node.id >> 1u, node.depth - 1);
 }
 
-CBTDEF CBT_Node CBT_ParentNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_ParentNode(const cbt_Node node)
 {
-     return CBT_IsNullNode(node) ? node : CBT__ParentNode_Fast(node);
+     return cbt_IsNullNode(node) ? node : cbt__ParentNode_Fast(node);
 }
 
 
@@ -269,15 +262,15 @@ CBTDEF CBT_Node CBT_ParentNode(const CBT_Node node)
  * CeilNode -- Returns the associated ceil node, i.e., the deepest possible leaf
  *
  */
-static CBT_Node CBT__CeilNode_Fast(const CBT_Tree *tree, const CBT_Node node)
+static cbt_Node cbt__CeilNode_Fast(const cbt_Tree *tree, const cbt_Node node)
 {
-    return CBT__CreateNode(node.id << (tree->maxDepth - node.depth),
+    return cbt__CreateNode(node.id << (tree->maxDepth - node.depth),
                            tree->maxDepth);
 }
 
-static CBT_Node CBT__CeilNode(const CBT_Tree *tree, const CBT_Node node)
+static cbt_Node cbt__CeilNode(const cbt_Tree *tree, const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__CeilNode_Fast(tree, node);
+    return cbt_IsNullNode(node) ? node : cbt__CeilNode_Fast(tree, node);
 }
 
 
@@ -285,14 +278,14 @@ static CBT_Node CBT__CeilNode(const CBT_Tree *tree, const CBT_Node node)
  * SiblingNode -- Computes the sibling of the input node
  *
  */
-static CBT_Node CBT__SiblingNode_Fast(const CBT_Node node)
+static cbt_Node cbt__SiblingNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id ^ 1u, node.depth);
+    return cbt__CreateNode(node.id ^ 1u, node.depth);
 }
 
-CBTDEF CBT_Node CBT_SiblingNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_SiblingNode(const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__SiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt__SiblingNode_Fast(node);
 }
 
 
@@ -300,14 +293,14 @@ CBTDEF CBT_Node CBT_SiblingNode(const CBT_Node node)
  * RightSiblingNode -- Computes the right sibling of the input node
  *
  */
-static CBT_Node CBT__RightSiblingNode_Fast(const CBT_Node node)
+static cbt_Node cbt__RightSiblingNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id | 1u, node.depth);
+    return cbt__CreateNode(node.id | 1u, node.depth);
 }
 
-CBTDEF CBT_Node CBT_RightSiblingNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_RightSiblingNode(const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__RightSiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt__RightSiblingNode_Fast(node);
 }
 
 
@@ -315,14 +308,14 @@ CBTDEF CBT_Node CBT_RightSiblingNode(const CBT_Node node)
  * LeftSiblingNode -- Computes the left sibling of the input node
  *
  */
-static CBT_Node CBT__LeftSiblingNode_Fast(const CBT_Node node)
+static cbt_Node cbt__LeftSiblingNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id & (~1u), node.depth);
+    return cbt__CreateNode(node.id & (~1u), node.depth);
 }
 
-CBTDEF CBT_Node CBT_LeftSiblingNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_LeftSiblingNode(const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__LeftSiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt__LeftSiblingNode_Fast(node);
 }
 
 
@@ -330,14 +323,14 @@ CBTDEF CBT_Node CBT_LeftSiblingNode(const CBT_Node node)
  * RightChildNode -- Computes the right child of the input node
  *
  */
-static CBT_Node CBT__RightChildNode_Fast(const CBT_Node node)
+static cbt_Node cbt__RightChildNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id << 1u | 1u, node.depth + 1);
+    return cbt__CreateNode(node.id << 1u | 1u, node.depth + 1);
 }
 
-CBTDEF CBT_Node CBT_RightChildNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_RightChildNode(const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__RightChildNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt__RightChildNode_Fast(node);
 }
 
 
@@ -345,14 +338,14 @@ CBTDEF CBT_Node CBT_RightChildNode(const CBT_Node node)
  * LeftChildNode -- Computes the left child of the input node
  *
  */
-static CBT_Node CBT__LeftChildNode_Fast(const CBT_Node node)
+static cbt_Node cbt__LeftChildNode_Fast(const cbt_Node node)
 {
-    return CBT__CreateNode(node.id << 1u, node.depth + 1);
+    return cbt__CreateNode(node.id << 1u, node.depth + 1);
 }
 
-CBTDEF CBT_Node CBT_LeftChildNode(const CBT_Node node)
+CBTDEF cbt_Node cbt_LeftChildNode(const cbt_Node node)
 {
-    return CBT_IsNullNode(node) ? node : CBT__LeftChildNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt__LeftChildNode_Fast(node);
 }
 
 
@@ -364,7 +357,7 @@ CBTDEF CBT_Node CBT_LeftChildNode(const CBT_Node node)
  * to round the required number of bits to a power of two.
  *
  */
-static inline int32_t CBT__HeapBitSize(int32_t treeMaxDepth)
+static inline int32_t cbt__HeapBitSize(int32_t treeMaxDepth)
 {
     return 1u << (treeMaxDepth + 2u);
 }
@@ -374,9 +367,9 @@ static inline int32_t CBT__HeapBitSize(int32_t treeMaxDepth)
  * HeapUint32Size -- Computes the number of uints to allocate for the bitfield
  *
  */
-static inline int32_t CBT__HeapUint32Size(uint32_t treeMaxDepth)
+static inline int32_t cbt__HeapUint32Size(uint32_t treeMaxDepth)
 {
-    return CBT__HeapBitSize(treeMaxDepth) >> 5u;
+    return cbt__HeapBitSize(treeMaxDepth) >> 5u;
 }
 
 
@@ -384,9 +377,9 @@ static inline int32_t CBT__HeapUint32Size(uint32_t treeMaxDepth)
  * HeapByteSize -- Computes the number of Bytes to allocate for the bitfield
  *
  */
-static int32_t CBT__HeapByteSize(uint32_t treeMaxDepth)
+static int32_t cbt__HeapByteSize(uint32_t treeMaxDepth)
 {
-    return CBT__HeapUint32Size(treeMaxDepth) * sizeof(uint32_t);
+    return cbt__HeapUint32Size(treeMaxDepth) * sizeof(uint32_t);
 }
 
 
@@ -403,7 +396,7 @@ static int32_t CBT__HeapByteSize(uint32_t treeMaxDepth)
  * Note that the null index (nodeID = 0) is also supported.
  *
  */
-static inline uint32_t CBT__NodeBitID(const CBT_Tree *tree, const CBT_Node node)
+static inline uint32_t cbt__NodeBitID(const cbt_Tree *tree, const cbt_Node node)
 {
     uint32_t tmp1 = 2u << node.depth;
     uint32_t tmp2 = 1u + (uint32_t)(tree->maxDepth - node.depth);
@@ -419,9 +412,9 @@ static inline uint32_t CBT__NodeBitID(const CBT_Tree *tree, const CBT_Node node)
  * returned, which is finalNodeID + 2^{D + 1}
  */
 static uint32_t
-CBT__NodeBitID_BitField(const CBT_Tree *tree, const CBT_Node node)
+cbt__NodeBitID_BitField(const cbt_Tree *tree, const cbt_Node node)
 {
-    return CBT__NodeBitID(tree, CBT__CeilNode(tree, node));
+    return cbt__NodeBitID(tree, cbt__CeilNode(tree, node));
 }
 
 
@@ -430,7 +423,7 @@ CBT__NodeBitID_BitField(const CBT_Tree *tree, const CBT_Node node)
  *
  */
 static inline
-int32_t CBT__NodeBitSize(const CBT_Tree *tree, const CBT_Node node)
+int32_t cbt__NodeBitSize(const cbt_Tree *tree, const cbt_Node node)
 {
     return tree->maxDepth - node.depth + 1;
 }
@@ -450,19 +443,19 @@ typedef struct {
     uint32_t *bitFieldLSB, *bitFieldMSB;
     uint32_t bitOffsetLSB;
     uint32_t bitCountLSB, bitCountMSB;
-} CBT__HeapArgs;
+} cbt__HeapArgs;
 
-CBT__HeapArgs
-CBT__CreateHeapArgs(const CBT_Tree *tree, const CBT_Node node, int32_t bitCount)
+cbt__HeapArgs
+cbt__CreateHeapArgs(const cbt_Tree *tree, const cbt_Node node, int32_t bitCount)
 {
-    uint32_t alignedBitOffset = CBT__NodeBitID(tree, node);
-    uint32_t maxBufferIndex = CBT__HeapUint32Size(tree->maxDepth) - 1u;
+    uint32_t alignedBitOffset = cbt__NodeBitID(tree, node);
+    uint32_t maxBufferIndex = cbt__HeapUint32Size(tree->maxDepth) - 1u;
     uint32_t bufferIndexLSB = (alignedBitOffset >> 5u);
-    uint32_t bufferIndexMSB = CBT__MinValue(bufferIndexLSB + 1, maxBufferIndex);
-    CBT__HeapArgs args;
+    uint32_t bufferIndexMSB = cbt__MinValue(bufferIndexLSB + 1, maxBufferIndex);
+    cbt__HeapArgs args;
 
     args.bitOffsetLSB = alignedBitOffset & 31u;
-    args.bitCountLSB = CBT__MinValue(32u - args.bitOffsetLSB, bitCount);
+    args.bitCountLSB = cbt__MinValue(32u - args.bitOffsetLSB, bitCount);
     args.bitCountMSB = bitCount - args.bitCountLSB;
     args.bitFieldLSB = &tree->heap[bufferIndexLSB];
     args.bitFieldMSB = &tree->heap[bufferIndexMSB];
@@ -480,27 +473,27 @@ CBT__CreateHeapArgs(const CBT_Tree *tree, const CBT_Node node, int32_t bitCount)
  *
  */
 static void
-CBT__HeapWriteExplicit(
-    CBT_Tree *tree,
-    const CBT_Node node,
+cbt__HeapWriteExplicit(
+    cbt_Tree *tree,
+    const cbt_Node node,
     int32_t bitCount,
     uint32_t bitData
 ) {
-    CBT__HeapArgs args = CBT__CreateHeapArgs(tree, node, bitCount);
+    cbt__HeapArgs args = cbt__CreateHeapArgs(tree, node, bitCount);
 
-    CBT__BitFieldInsert(args.bitFieldLSB,
+    cbt__BitFieldInsert(args.bitFieldLSB,
                         args.bitOffsetLSB,
                         args.bitCountLSB,
                         bitData);
-    CBT__BitFieldInsert(args.bitFieldMSB,
+    cbt__BitFieldInsert(args.bitFieldMSB,
                         0u,
                         args.bitCountMSB,
                         bitData >> args.bitCountLSB);
 }
 
-static void CBT__HeapWrite(CBT_Tree *tree, const CBT_Node node, uint32_t bitData)
+static void cbt__HeapWrite(cbt_Tree *tree, const cbt_Node node, uint32_t bitData)
 {
-    CBT__HeapWriteExplicit(tree, node, CBT__NodeBitSize(tree, node), bitData);
+    cbt__HeapWriteExplicit(tree, node, cbt__NodeBitSize(tree, node), bitData);
 }
 
 
@@ -513,25 +506,25 @@ static void CBT__HeapWrite(CBT_Tree *tree, const CBT_Node node, uint32_t bitData
  *
  */
 static uint32_t
-CBT__HeapReadExplicit(
-    const CBT_Tree *tree,
-    const CBT_Node node,
+cbt__HeapReadExplicit(
+    const cbt_Tree *tree,
+    const cbt_Node node,
     int32_t bitCount
 ) {
-    CBT__HeapArgs args = CBT__CreateHeapArgs(tree, node, bitCount);
-    uint32_t lsb = CBT__BitFieldExtract(*args.bitFieldLSB,
+    cbt__HeapArgs args = cbt__CreateHeapArgs(tree, node, bitCount);
+    uint32_t lsb = cbt__BitFieldExtract(*args.bitFieldLSB,
                                         args.bitOffsetLSB,
                                         args.bitCountLSB);
-    uint32_t msb = CBT__BitFieldExtract(*args.bitFieldMSB,
+    uint32_t msb = cbt__BitFieldExtract(*args.bitFieldMSB,
                                         0u,
                                         args.bitCountMSB);
 
     return (lsb | (msb << args.bitCountLSB));
 }
 
-static uint32_t CBT__HeapRead(const CBT_Tree *tree, const CBT_Node node)
+static uint32_t cbt__HeapRead(const cbt_Tree *tree, const cbt_Node node)
 {
-    return CBT__HeapReadExplicit(tree, node, CBT__NodeBitSize(tree, node));
+    return cbt__HeapReadExplicit(tree, node, cbt__NodeBitSize(tree, node));
 }
 
 
@@ -542,14 +535,14 @@ static uint32_t CBT__HeapRead(const CBT_Tree *tree, const CBT_Node node)
  *
  */
 static void
-CBT__HeapWrite_BitField(
-    CBT_Tree *tree,
-    const CBT_Node node,
+cbt__HeapWrite_BitField(
+    cbt_Tree *tree,
+    const cbt_Node node,
     const uint32_t bitValue
 ) {
-    uint32_t bitID = CBT__NodeBitID_BitField(tree, node);
+    uint32_t bitID = cbt__NodeBitID_BitField(tree, node);
 
-    CBT__SetBitValue(&tree->heap[bitID >> 5u], bitID & 31u, bitValue);
+    cbt__SetBitValue(&tree->heap[bitID >> 5u], bitID & 31u, bitValue);
 }
 
 
@@ -557,9 +550,9 @@ CBT__HeapWrite_BitField(
  * IsLeafNode -- Checks if a node is a leaf node, i.e., that has no descendants
  *
  */
-CBTDEF bool CBT_IsLeafNode(const CBT_Tree *tree, const CBT_Node node)
+CBTDEF bool cbt_IsLeafNode(const cbt_Tree *tree, const cbt_Node node)
 {
-    return (CBT__HeapRead(tree, node) == 1u);
+    return (cbt__HeapRead(tree, node) == 1u);
 }
 
 
@@ -567,9 +560,9 @@ CBTDEF bool CBT_IsLeafNode(const CBT_Tree *tree, const CBT_Node node)
  * ClearData -- Resets the data buffer stored by a LEB
  *
  */
-static void CBT__ClearBuffer(CBT_Tree *tree)
+static void cbt__ClearBuffer(cbt_Tree *tree)
 {
-    CBT_MEMSET(tree->heap, 0, CBT__HeapByteSize(tree->maxDepth));
+    CBT_MEMSET(tree->heap, 0, cbt__HeapByteSize(tree->maxDepth));
 }
 
 
@@ -577,7 +570,7 @@ static void CBT__ClearBuffer(CBT_Tree *tree)
  * GetHeapMemory -- Returns a read-only pointer to the heap memory
  *
  */
-CBTDEF const char *CBT_GetHeapMemory(const CBT_Tree *tree)
+CBTDEF const char *cbt_GetHeapMemory(const cbt_Tree *tree)
 {
     return (char *)tree->heap;
 }
@@ -587,9 +580,9 @@ CBTDEF const char *CBT_GetHeapMemory(const CBT_Tree *tree)
  * SetHeapMemory -- Sets the heap memory from a read-only buffer
  *
  */
-CBTDEF void CBT_SetHeapMemory(CBT_Tree *tree, const char *buffer)
+CBTDEF void cbt_SetHeapMemory(cbt_Tree *tree, const char *buffer)
 {
-    memcpy(tree->heap, buffer, CBT_HeapByteSize(tree));
+    memcpy(tree->heap, buffer, cbt_HeapByteSize(tree));
 }
 
 
@@ -597,9 +590,9 @@ CBTDEF void CBT_SetHeapMemory(CBT_Tree *tree, const char *buffer)
  * HeapByteSize -- Returns the amount of bytes consumed by the LEB heap
  *
  */
-CBTDEF int32_t CBT_HeapByteSize(const CBT_Tree *tree)
+CBTDEF int32_t cbt_HeapByteSize(const cbt_Tree *tree)
 {
-    return CBT__HeapByteSize(tree->maxDepth);
+    return cbt__HeapByteSize(tree->maxDepth);
 }
 
 
@@ -607,7 +600,7 @@ CBTDEF int32_t CBT_HeapByteSize(const CBT_Tree *tree)
  * UpdateBuffer -- Sums the 2 elements below the current slot
  *
  */
-static void CBT__ComputeSumReduction(CBT_Tree *tree)
+static void cbt__ComputeSumReduction(cbt_Tree *tree)
 {
     int32_t depth = tree->maxDepth;
     uint32_t minNodeID = (1u << depth);
@@ -616,8 +609,8 @@ static void CBT__ComputeSumReduction(CBT_Tree *tree)
     // prepass: processes deepest levels in parallel
 #pragma omp parallel for
     for (uint32_t nodeID = minNodeID; nodeID < maxNodeID; nodeID+= 32u) {
-        uint32_t alignedBitOffset = CBT__NodeBitID(tree,
-                                                   CBT__CreateNode(nodeID, depth));
+        uint32_t alignedBitOffset = cbt__NodeBitID(tree,
+                                                   cbt__CreateNode(nodeID, depth));
         uint32_t bitField = tree->heap[alignedBitOffset >> 5u];
         uint32_t bitData = 0u;
 
@@ -636,7 +629,7 @@ static void CBT__ComputeSumReduction(CBT_Tree *tree)
                 | ((bitField >> 5u) & (7u << 15u))
                 | ((bitField >> 6u) & (7u << 18u))
                 | ((bitField >> 7u) & (7u << 21u));
-        CBT__HeapWriteExplicit(tree, CBT__CreateNode(nodeID >> 2u, depth - 2), 24u, bitData);
+        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 2u, depth - 2), 24u, bitData);
 
         // 4-bits
         bitField = (bitField & 0x0F0F0F0Fu) + ((bitField >>  4u) & 0x0F0F0F0Fu);
@@ -644,18 +637,18 @@ static void CBT__ComputeSumReduction(CBT_Tree *tree)
                 | ((bitField >>  4u) & (15u <<  4u))
                 | ((bitField >>  8u) & (15u <<  8u))
                 | ((bitField >> 12u) & (15u << 12u));
-        CBT__HeapWriteExplicit(tree, CBT__CreateNode(nodeID >> 3u, depth - 3), 16u, bitData);
+        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 3u, depth - 3), 16u, bitData);
 
         // 5-bits
         bitField = (bitField & 0x00FF00FFu) + ((bitField >>  8u) & 0x00FF00FFu);
         bitData = ((bitField >>  0u) & (31u << 0u))
                 | ((bitField >> 11u) & (31u << 5u));
-        CBT__HeapWriteExplicit(tree, CBT__CreateNode(nodeID >> 4u, depth - 4), 10u, bitData);
+        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 4u, depth - 4), 10u, bitData);
 
         // 6-bits
         bitField = (bitField & 0x0000FFFFu) + ((bitField >> 16u) & 0x0000FFFFu);
         bitData = bitField;
-        CBT__HeapWriteExplicit(tree, CBT__CreateNode(nodeID >> 5u, depth - 5),  6u, bitData);
+        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 5u, depth - 5),  6u, bitData);
     }
 #pragma omp barrier
     depth-= 5;
@@ -667,10 +660,10 @@ static void CBT__ComputeSumReduction(CBT_Tree *tree)
 
 #pragma omp parallel for
         for (uint32_t j = minNodeID; j < maxNodeID; ++j) {
-            uint32_t x0 = CBT__HeapRead(tree, CBT__CreateNode(j << 1u     , depth + 1));
-            uint32_t x1 = CBT__HeapRead(tree, CBT__CreateNode(j << 1u | 1u, depth + 1));
+            uint32_t x0 = cbt__HeapRead(tree, cbt__CreateNode(j << 1u     , depth + 1));
+            uint32_t x1 = cbt__HeapRead(tree, cbt__CreateNode(j << 1u | 1u, depth + 1));
 
-            CBT__HeapWrite(tree, CBT__CreateNode(j, depth), x0 + x1);
+            cbt__HeapWrite(tree, cbt__CreateNode(j, depth), x0 + x1);
         }
 #pragma omp barrier
     }
@@ -681,26 +674,26 @@ static void CBT__ComputeSumReduction(CBT_Tree *tree)
  * Buffer Ctor
  *
  */
-CBTDEF CBT_Tree *CBT_CreateMinMax(int minDepth, int maxDepth)
+CBTDEF cbt_Tree *cbt_CreateMinMax(int minDepth, int maxDepth)
 {
     CBT_ASSERT(maxDepth >=  5 && "maxDepth must be at least 5");
     CBT_ASSERT(maxDepth <= 28 && "maxDepth must be at most 29");
     CBT_ASSERT(minDepth >=  0 && "minDepth must be at least 0");
     CBT_ASSERT(minDepth <= maxDepth && "minDepth must be less than maxDepth");
-    CBT_Tree *tree = (CBT_Tree *)CBT_MALLOC(sizeof(*tree));
+    cbt_Tree *tree = (cbt_Tree *)CBT_MALLOC(sizeof(*tree));
 
     tree->minDepth = minDepth;
     tree->maxDepth = maxDepth;
-    tree->heap = (uint32_t *)CBT_MALLOC(CBT__HeapByteSize(maxDepth));
+    tree->heap = (uint32_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
     CBT_ASSERT(tree->heap != NULL && "Memory allocation failed");
-    CBT_ResetToMinDepth(tree);
+    cbt_ResetToMinDepth(tree);
 
     return tree;
 }
 
-CBTDEF CBT_Tree *CBT_Create(int maxDepth)
+CBTDEF cbt_Tree *cbt_Create(int maxDepth)
 {
-    return CBT_CreateMinMax(0, maxDepth);
+    return cbt_CreateMinMax(0, maxDepth);
 }
 
 
@@ -708,7 +701,7 @@ CBTDEF CBT_Tree *CBT_Create(int maxDepth)
  * Buffer Dtor
  *
  */
-CBTDEF void CBT_Release(CBT_Tree *tree)
+CBTDEF void cbt_Release(cbt_Tree *tree)
 {
     CBT_FREE(tree->heap);
     CBT_FREE(tree);
@@ -719,22 +712,22 @@ CBTDEF void CBT_Release(CBT_Tree *tree)
  * ResetToDepth -- Initializes a LEB to its a specific subdivision level
  *
  */
-CBTDEF void CBT_ResetToDepth(CBT_Tree *tree, int32_t depth)
+CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth)
 {
     CBT_ASSERT(depth >= tree->minDepth && "depth must be at least equal to minDepth");
     CBT_ASSERT(depth <= tree->maxDepth && "depth must be at most equal to maxDepth");
     uint32_t minNodeID = 1u << depth;
     uint32_t maxNodeID = 2u << depth;
 
-    CBT__ClearBuffer(tree);
+    cbt__ClearBuffer(tree);
 
     for (uint32_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
-        CBT_Node node = CBT__CreateNode(nodeID, depth);
+        cbt_Node node = cbt__CreateNode(nodeID, depth);
 
-        CBT__HeapWrite_BitField(tree, node, 1u);
+        cbt__HeapWrite_BitField(tree, node, 1u);
     }
 
-    CBT__ComputeSumReduction(tree);
+    cbt__ComputeSumReduction(tree);
 }
 
 
@@ -742,9 +735,9 @@ CBTDEF void CBT_ResetToDepth(CBT_Tree *tree, int32_t depth)
  * ResetToMinDepth -- Initializes a LEB to its minimum subdivision level
  *
  */
-CBTDEF void CBT_ResetToMinDepth(CBT_Tree *tree)
+CBTDEF void cbt_ResetToMinDepth(cbt_Tree *tree)
 {
-    CBT_ResetToDepth(tree, tree->minDepth);
+    cbt_ResetToDepth(tree, tree->minDepth);
 }
 
 
@@ -752,9 +745,9 @@ CBTDEF void CBT_ResetToMinDepth(CBT_Tree *tree)
  * ResetToMaxDepth -- Initializes a LEB to its maximum subdivision level
  *
  */
-CBTDEF void CBT_ResetToMaxDepth(CBT_Tree *tree)
+CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree)
 {
-    CBT_ResetToDepth(tree, tree->maxDepth);
+    cbt_ResetToDepth(tree, tree->maxDepth);
 }
 
 
@@ -766,15 +759,15 @@ CBTDEF void CBT_ResetToMaxDepth(CBT_Tree *tree)
  * less than maxDepth.
  *
  */
-CBTDEF void CBT_SplitNode_Fast(CBT_Tree *tree, const CBT_Node node)
+CBTDEF void cbt_SplitNode_Fast(cbt_Tree *tree, const cbt_Node node)
 {
-    CBT__HeapWrite_BitField(tree, CBT_RightChildNode(node), 1u);
+    cbt__HeapWrite_BitField(tree, cbt_RightChildNode(node), 1u);
 }
 
-CBTDEF void CBT_SplitNode(CBT_Tree *tree, const CBT_Node node)
+CBTDEF void cbt_SplitNode(cbt_Tree *tree, const cbt_Node node)
 {
-    if (!CBT_IsCeilNode(tree, node))
-        CBT_SplitNode_Fast(tree, node);
+    if (!cbt_IsCeilNode(tree, node))
+        cbt_SplitNode_Fast(tree, node);
 }
 
 
@@ -786,15 +779,15 @@ CBTDEF void CBT_SplitNode(CBT_Tree *tree, const CBT_Node node)
  * greater than minDepth.
  *
  */
-CBTDEF void CBT_MergeNode_Fast(CBT_Tree *tree, const CBT_Node node)
+CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree, const cbt_Node node)
 {
-    CBT__HeapWrite_BitField(tree, CBT_RightSiblingNode(node), 0u);
+    cbt__HeapWrite_BitField(tree, cbt_RightSiblingNode(node), 0u);
 }
 
-CBTDEF void CBT_MergeNode(CBT_Tree *tree, const CBT_Node node)
+CBTDEF void cbt_MergeNode(cbt_Tree *tree, const cbt_Node node)
 {
-    if (!CBT_IsRootNode(tree, node))
-        CBT_MergeNode_Fast(tree, node);
+    if (!cbt_IsRootNode(tree, node))
+        cbt_MergeNode_Fast(tree, node);
 }
 
 
@@ -802,7 +795,7 @@ CBTDEF void CBT_MergeNode(CBT_Tree *tree, const CBT_Node node)
  * MinDepth -- Returns the min LEB depth
  *
  */
-CBTDEF int32_t CBT_MinDepth(const CBT_Tree *tree)
+CBTDEF int32_t cbt_MinDepth(const cbt_Tree *tree)
 {
     return tree->minDepth;
 }
@@ -812,7 +805,7 @@ CBTDEF int32_t CBT_MinDepth(const CBT_Tree *tree)
  * MaxDepth -- Returns the max LEB depth
  *
  */
-CBTDEF int32_t CBT_MaxDepth(const CBT_Tree *tree)
+CBTDEF int32_t cbt_MaxDepth(const cbt_Tree *tree)
 {
     return tree->maxDepth;
 }
@@ -822,9 +815,9 @@ CBTDEF int32_t CBT_MaxDepth(const CBT_Tree *tree)
  * NodeCount -- Returns the number of triangles in the LEB
  *
  */
-CBTDEF int32_t CBT_NodeCount(const CBT_Tree *tree)
+CBTDEF int32_t cbt_NodeCount(const cbt_Tree *tree)
 {
-    return CBT__HeapRead(tree, CBT__CreateNode(1u, 0));
+    return cbt__HeapRead(tree, cbt__CreateNode(1u, 0));
 }
 
 
@@ -834,15 +827,15 @@ CBTDEF int32_t CBT_NodeCount(const CBT_Tree *tree)
  * This is procedure is for iterating over the nodes.
  *
  */
-CBTDEF CBT_Node CBT_DecodeNode(const CBT_Tree *tree, int32_t handle)
+CBTDEF cbt_Node cbt_DecodeNode(const cbt_Tree *tree, int32_t handle)
 {
-    CBT_ASSERT(handle < CBT_NodeCount(tree) && "handle > NodeCount");
+    CBT_ASSERT(handle < cbt_NodeCount(tree) && "handle > NodeCount");
     CBT_ASSERT(handle >= 0 && "handle < 0");
 
-    CBT_Node node = CBT__CreateNode(1u, 0);
+    cbt_Node node = cbt__CreateNode(1u, 0);
 
-    while (CBT__HeapRead(tree, node) > 1u) {
-        uint32_t cmp = CBT__HeapRead(tree, CBT__CreateNode(node.id<<= 1u, ++node.depth));
+    while (cbt__HeapRead(tree, node) > 1u) {
+        uint32_t cmp = cbt__HeapRead(tree, cbt__CreateNode(node.id<<= 1u, ++node.depth));
         uint32_t b = handle < cmp ? 0 : 1;
 
         node.id|= b;
@@ -859,19 +852,19 @@ CBTDEF CBT_Node CBT_DecodeNode(const CBT_Tree *tree, int32_t handle)
  * This does the inverse of the DecodeNode routine.
  *
  */
-CBTDEF int32_t CBT_EncodeNode(const CBT_Tree *tree, const CBT_Node node)
+CBTDEF int32_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node)
 {
-    CBT_ASSERT(CBT_IsLeafNode(tree, node) && "node is not a leaf");
+    CBT_ASSERT(cbt_IsLeafNode(tree, node) && "node is not a leaf");
 
     int32_t handle = 0u;
-    CBT_Node nodeIterator = node;
+    cbt_Node nodeIterator = node;
 
     while (nodeIterator.id > 1u) {
-        CBT_Node sibling = CBT__LeftSiblingNode_Fast(nodeIterator);
-        uint32_t nodeCount = CBT__HeapRead(tree, CBT__CreateNode(sibling.id, sibling.depth));
+        cbt_Node sibling = cbt__LeftSiblingNode_Fast(nodeIterator);
+        uint32_t nodeCount = cbt__HeapRead(tree, cbt__CreateNode(sibling.id, sibling.depth));
 
         handle+= (nodeIterator.id & 1u) * nodeCount;
-        nodeIterator = CBT__ParentNode_Fast(nodeIterator);
+        nodeIterator = cbt__ParentNode_Fast(nodeIterator);
     }
 
     return handle;
@@ -885,15 +878,15 @@ CBTDEF int32_t CBT_EncodeNode(const CBT_Tree *tree, const CBT_Node node)
  * splitting or merging each node.
  *
  */
-CBTDEF void CBT_Update(CBT_Tree *tree, CBT_UpdateCallback updater)
+CBTDEF void cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater)
 {
 #pragma omp parallel for
-    for (int64_t handle = 0; handle < CBT_NodeCount(tree); ++handle) {
-        updater(tree, CBT_DecodeNode(tree, handle));
+    for (int64_t handle = 0; handle < cbt_NodeCount(tree); ++handle) {
+        updater(tree, cbt_DecodeNode(tree, handle));
     }
 #pragma omp barrier
 
-    CBT__ComputeSumReduction(tree);
+    cbt__ComputeSumReduction(tree);
 }
 
 
