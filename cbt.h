@@ -121,6 +121,16 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 #    define CBT_MEMSET(ptr, value, num) memset(ptr, value, num)
 #endif
 
+#ifndef _OPENMP
+#   define CBT_ATOMIC
+#   define CBT_PARALLEL_FOR
+#   define CBT_BARRIER
+#else
+#   define CBT_ATOMIC          _Pragma("omp atomic" )
+#   define CBT_PARALLEL_FOR    _Pragma("omp parallel for")
+#   define CBT_BARRIER         _Pragma("omp barrier")
+#endif
+
 /*******************************************************************************
  * MinValue -- Returns the minimum value between two inputs
  *
@@ -140,9 +150,9 @@ cbt__SetBitValue(uint32_t *bitField, int32_t bitID, uint32_t bitValue)
 {
     const uint32_t bitMask = ~(1u << bitID);
 
-#pragma omp atomic
+CBT_ATOMIC
     (*bitField)&= bitMask;
-#pragma omp atomic
+CBT_ATOMIC
     (*bitField)|= (bitValue << bitID);
 }
 
@@ -160,9 +170,9 @@ cbt__BitFieldInsert(
 ) {
     CBT_ASSERT(bitOffset < 32 && bitCount <= 32 && bitOffset + bitCount <= 32);
     uint32_t bitMask = ~(~(0xFFFFFFFFu << bitCount) << bitOffset);
-#pragma omp atomic
+CBT_ATOMIC
     (*bitField)&= bitMask;
-#pragma omp atomic
+CBT_ATOMIC
     (*bitField)|= (bitData << bitOffset);
 }
 
@@ -605,7 +615,7 @@ static void cbt__ComputeSumReduction(cbt_Tree *tree)
     uint32_t maxNodeID = (2u << depth);
 
     // prepass: processes deepest levels in parallel
-#pragma omp parallel for
+CBT_PARALLEL_FOR
     for (uint32_t nodeID = minNodeID; nodeID < maxNodeID; nodeID+= 32u) {
         uint32_t alignedBitOffset = cbt__NodeBitID(tree,
                                                    cbt__CreateNode(nodeID, depth));
@@ -648,7 +658,7 @@ static void cbt__ComputeSumReduction(cbt_Tree *tree)
         bitData = bitField;
         cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 5u, depth - 5),  6u, bitData);
     }
-#pragma omp barrier
+CBT_BARRIER
     depth-= 5;
 
     // iterate over elements atomically
@@ -656,14 +666,14 @@ static void cbt__ComputeSumReduction(cbt_Tree *tree)
         uint32_t minNodeID = 1u << depth;
         uint32_t maxNodeID = 2u << depth;
 
-#pragma omp parallel for
+CBT_PARALLEL_FOR
         for (uint32_t j = minNodeID; j < maxNodeID; ++j) {
             uint32_t x0 = cbt__HeapRead(tree, cbt__CreateNode(j << 1u     , depth + 1));
             uint32_t x1 = cbt__HeapRead(tree, cbt__CreateNode(j << 1u | 1u, depth + 1));
 
             cbt__HeapWrite(tree, cbt__CreateNode(j, depth), x0 + x1);
         }
-#pragma omp barrier
+CBT_BARRIER
     }
 }
 
@@ -878,11 +888,11 @@ CBTDEF int32_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node)
  */
 CBTDEF void cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater)
 {
-#pragma omp parallel for
+CBT_PARALLEL_FOR
     for (int64_t handle = 0; handle < cbt_NodeCount(tree); ++handle) {
         updater(tree, cbt_DecodeNode(tree, handle));
     }
-#pragma omp barrier
+CBT_BARRIER
 
     cbt__ComputeSumReduction(tree);
 }
