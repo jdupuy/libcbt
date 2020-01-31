@@ -896,5 +896,9 @@ CBT_BARRIER
 
     cbt__ComputeSumReduction(tree);
 }
+
+#undef CBT_ATOMIC
+#undef CBT_PARALLEL_FOR
+#undef CBT_BARRIER
 #endif
 
