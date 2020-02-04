@@ -38,8 +38,8 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int32_t maxDepth, int32_t depth);
 CBTDEF void cbt_Release(cbt_Tree *tree);
 
 // loaders
-CBTDEF void cbt_ResetToCeil(cbt_Tree *tree);
 CBTDEF void cbt_ResetToRoot(cbt_Tree *tree);
+CBTDEF void cbt_ResetToCeil(cbt_Tree *tree);
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth);
 
 // manipulation
@@ -74,7 +74,6 @@ CBTDEF int32_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node);
 CBTDEF int32_t cbt_HeapByteSize(const cbt_Tree *tree);
 CBTDEF const char *cbt_GetHeap(const cbt_Tree *tree);
 CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
-
 
 #ifdef __cplusplus
 } // extern "C"
