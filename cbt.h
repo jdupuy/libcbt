@@ -38,7 +38,8 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int32_t maxDepth, int32_t depth);
 CBTDEF void cbt_Release(cbt_Tree *tree);
 
 // loaders
-CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree);
+CBTDEF void cbt_ResetToCeil(cbt_Tree *tree);
+CBTDEF void cbt_ResetToRoot(cbt_Tree *tree);
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth);
 
 // manipulation
@@ -721,12 +722,22 @@ CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth)
 
 
 /*******************************************************************************
- * ResetToMaxDepth -- Initializes a LEB to its maximum subdivision level
+ * ResetToCeil -- Initializes a LEB to its maximum subdivision level
  *
  */
-CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree)
+CBTDEF void cbt_ResetToCeil(cbt_Tree *tree)
 {
     cbt_ResetToDepth(tree, tree->maxDepth);
+}
+
+
+/*******************************************************************************
+ * ResetToRoot -- Initializes a LEB to its minimum subdivision level
+ *
+ */
+CBTDEF void cbt_ResetToRoot(cbt_Tree *tree)
+{
+    cbt_ResetToDepth(tree, 0);
 }
 
 
