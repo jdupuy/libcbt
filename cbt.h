@@ -34,32 +34,22 @@ typedef struct {
 
 // create / destroy tree
 CBTDEF cbt_Tree *cbt_Create(int32_t maxDepth);
-CBTDEF cbt_Tree *cbt_CreateMinMax(int32_t minDepth,
-                                  int32_t maxDepth);
-CBTDEF cbt_Tree *cbt_CreateMinMaxDepth(int32_t minDepth,
-                                       int32_t maxDepth,
-                                       int32_t depth);
+CBTDEF cbt_Tree *cbt_CreateAtDepth(int32_t maxDepth, int32_t depth);
 CBTDEF void cbt_Release(cbt_Tree *tree);
 
 // loaders
-CBTDEF void cbt_ResetToMinDepth(cbt_Tree *tree);
 CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree);
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth);
 
 // manipulation
-CBTDEF void cbt_SplitNode_Fast(cbt_Tree *tree,
-                               const cbt_Node node);
-CBTDEF void cbt_SplitNode(cbt_Tree *tree,
-                          const cbt_Node node);
-CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree,
-                               const cbt_Node node);
-CBTDEF void cbt_MergeNode(cbt_Tree *tree,
-                          const cbt_Node node);
+CBTDEF void cbt_SplitNode_Fast(cbt_Tree *tree, const cbt_Node node);
+CBTDEF void cbt_SplitNode     (cbt_Tree *tree, const cbt_Node node);
+CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree, const cbt_Node node);
+CBTDEF void cbt_MergeNode     (cbt_Tree *tree, const cbt_Node node);
 typedef void (*cbt_UpdateCallback)(cbt_Tree *tree, const cbt_Node node);
 CBTDEF void cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater);
 
 // O(1) queries
-CBTDEF int32_t cbt_MinDepth(const cbt_Tree *tree);
 CBTDEF int32_t cbt_MaxDepth(const cbt_Tree *tree);
 CBTDEF int32_t cbt_NodeCount(const cbt_Tree *tree);
 CBTDEF bool cbt_IsLeafNode(const cbt_Tree *tree, const cbt_Node node);
@@ -206,8 +196,7 @@ cbt__BitFieldExtract(
  */
 struct cbt_Tree {
     uint32_t *heap;
-    int32_t minDepth,
-            maxDepth;
+    int32_t maxDepth;
 };
 
 
@@ -242,7 +231,7 @@ CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node)
  */
 CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node)
 {
-    return (node.depth == tree->minDepth);
+    return (node.id == 1u);
 }
 
 
@@ -252,7 +241,7 @@ CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node)
  */
 CBTDEF bool cbt_IsNullNode(const cbt_Node node)
 {
-    return (node.id == 0);
+    return (node.id == 0u);
 }
 
 
@@ -677,26 +666,23 @@ CBT_BARRIER
  * Buffer Ctor
  *
  */
-CBTDEF cbt_Tree *cbt_CreateMinMax(int minDepth, int maxDepth)
+CBTDEF cbt_Tree *cbt_CreateAtDepth(int32_t maxDepth, int32_t depth)
 {
     CBT_ASSERT(maxDepth >=  5 && "maxDepth must be at least 5");
-    CBT_ASSERT(maxDepth <= 28 && "maxDepth must be at most 29");
-    CBT_ASSERT(minDepth >=  0 && "minDepth must be at least 0");
-    CBT_ASSERT(minDepth <= maxDepth && "minDepth must be less than maxDepth");
+    CBT_ASSERT(maxDepth <= 29 && "maxDepth must be at most 29");
     cbt_Tree *tree = (cbt_Tree *)CBT_MALLOC(sizeof(*tree));
 
-    tree->minDepth = minDepth;
     tree->maxDepth = maxDepth;
     tree->heap = (uint32_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
     CBT_ASSERT(tree->heap != NULL && "Memory allocation failed");
-    cbt_ResetToMinDepth(tree);
+    cbt_ResetToDepth(tree, depth);
 
     return tree;
 }
 
 CBTDEF cbt_Tree *cbt_Create(int maxDepth)
 {
-    return cbt_CreateMinMax(0, maxDepth);
+    return cbt_CreateAtDepth(maxDepth, 0);
 }
 
 
@@ -717,7 +703,7 @@ CBTDEF void cbt_Release(cbt_Tree *tree)
  */
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth)
 {
-    CBT_ASSERT(depth >= tree->minDepth && "depth must be at least equal to minDepth");
+    CBT_ASSERT(depth >= 0 && "depth must be at least equal to 0");
     CBT_ASSERT(depth <= tree->maxDepth && "depth must be at most equal to maxDepth");
     uint32_t minNodeID = 1u << depth;
     uint32_t maxNodeID = 2u << depth;
@@ -731,16 +717,6 @@ CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth)
     }
 
     cbt__ComputeSumReduction(tree);
-}
-
-
-/*******************************************************************************
- * ResetToMinDepth -- Initializes a LEB to its minimum subdivision level
- *
- */
-CBTDEF void cbt_ResetToMinDepth(cbt_Tree *tree)
-{
-    cbt_ResetToDepth(tree, tree->minDepth);
 }
 
 
@@ -779,7 +755,7 @@ CBTDEF void cbt_SplitNode(cbt_Tree *tree, const cbt_Node node)
  *
  * The _Fast version does not check if the node can actually merge, so
  * use it wisely, i.e., when you're absolutely sure the node depth is
- * greater than minDepth.
+ * greater than 0.
  *
  */
 CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree, const cbt_Node node)
@@ -791,16 +767,6 @@ CBTDEF void cbt_MergeNode(cbt_Tree *tree, const cbt_Node node)
 {
     if (!cbt_IsRootNode(tree, node))
         cbt_MergeNode_Fast(tree, node);
-}
-
-
-/*******************************************************************************
- * MinDepth -- Returns the min LEB depth
- *
- */
-CBTDEF int32_t cbt_MinDepth(const cbt_Tree *tree)
-{
-    return tree->minDepth;
 }
 
 
