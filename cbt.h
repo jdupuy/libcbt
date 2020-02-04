@@ -6,7 +6,8 @@ by Jonathan Dupuy
    define CBT_ASSERT(x) to avoid using assert.h
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
-   define CBT_MEMSET(x, value, num) to use your own memset routine
+   define CBT_MEMSET(ptr, value, num) to use your own memset routine
+   define CBT_MEMCPY(dst, src, num) to use your own memcpy routine
 */
 
 #ifndef CBT_INCLUDE_CBT_H
@@ -43,8 +44,7 @@ CBTDEF void cbt_Release(cbt_Tree *tree);
 // loaders
 CBTDEF void cbt_ResetToMinDepth(cbt_Tree *tree);
 CBTDEF void cbt_ResetToMaxDepth(cbt_Tree *tree);
-CBTDEF void cbt_ResetToDepth(cbt_Tree *tree,
-                             int32_t depth);
+CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int32_t depth);
 
 // manipulation
 CBTDEF void cbt_SplitNode_Fast(cbt_Tree *tree,
@@ -119,6 +119,11 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 #ifndef CBT_MEMSET
 #    include <string.h>
 #    define CBT_MEMSET(ptr, value, num) memset(ptr, value, num)
+#endif
+
+#ifndef CBT_MEMCPY
+#    include <string.h>
+#    define CBT_MEMCPY(dst, src, num) memcpy(dst, src, num)
 #endif
 
 #ifndef _OPENMP
@@ -590,7 +595,7 @@ CBTDEF const char *cbt_GetHeapMemory(const cbt_Tree *tree)
  */
 CBTDEF void cbt_SetHeapMemory(cbt_Tree *tree, const char *buffer)
 {
-    memcpy(tree->heap, buffer, cbt_HeapByteSize(tree));
+    CBT_MEMCPY(tree->heap, buffer, cbt_HeapByteSize(tree));
 }
 
 
