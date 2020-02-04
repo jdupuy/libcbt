@@ -363,16 +363,16 @@ CBTDEF cbt_Node cbt_LeftChildNode(const cbt_Node node)
 
 
 /*******************************************************************************
- * HeapBitSize -- Computes the number of bits to allocate for the buffer
+ * HeapByteSize -- Computes the number of Bytes to allocate for the bitfield
  *
- * For a tree of max depth D, the number of bits is 2^(D+2).
+ * For a tree of max depth D, the number of Bytes is 2^(D-1).
  * Note that 2 bits are "wasted" in the sense that they only serve
- * to round the required number of bits to a power of two.
+ * to round the required number of bytes to a power of two.
  *
  */
-static inline int32_t cbt__HeapBitSize(int32_t treeMaxDepth)
+static int32_t cbt__HeapByteSize(uint32_t treeMaxDepth)
 {
-    return 1u << (treeMaxDepth + 2u);
+    return 1 << (treeMaxDepth - 1);
 }
 
 
@@ -382,17 +382,7 @@ static inline int32_t cbt__HeapBitSize(int32_t treeMaxDepth)
  */
 static inline int32_t cbt__HeapUint32Size(uint32_t treeMaxDepth)
 {
-    return cbt__HeapBitSize(treeMaxDepth) >> 5u;
-}
-
-
-/*******************************************************************************
- * HeapByteSize -- Computes the number of Bytes to allocate for the bitfield
- *
- */
-static int32_t cbt__HeapByteSize(uint32_t treeMaxDepth)
-{
-    return cbt__HeapUint32Size(treeMaxDepth) * sizeof(uint32_t);
+    return cbt__HeapByteSize(treeMaxDepth) >> 2;
 }
 
 
