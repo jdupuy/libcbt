@@ -24,15 +24,14 @@ typedef struct {
 } leb_MergeNode;
 
 // create / destroy LEB
-#define leb_Create              cbt_Ctreate
-#define leb_CreateMinMax        cbt_CtreateMinMax
-#define leb_CreateMinMaxDepth   cbt_CreateMinMaxDepth
-#define leb_Release             cbt_Release
+#define leb_Create          cbt_Ctreate
+#define leb_CreateAtDepth   cbt_CreateAtDepth
+#define leb_Release         cbt_Release
 
 // loaders
-#define leb_ResetToMinDepth     cbt_ResetToMinDepth
-#define leb_ResetToMaxDepth     cbt_ResetToMaxDepth
-#define leb_ResetToDepth        cbt_ResetToDepth
+#define leb_ResetToRoot     cbt_ResetToRoot
+#define leb_ResetToCeil     cbt_ResetToCeil
+#define leb_ResetToDepth    cbt_ResetToDepth
 
 // manipulation
 LEBDEF void leb_SplitNode2D(leb_Heap *leb, const leb_Node node);
