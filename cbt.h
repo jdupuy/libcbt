@@ -28,8 +28,8 @@ extern "C" {
 
 typedef struct cbt_Tree cbt_Tree;
 typedef struct {
-    uint64_t id  : 58;
-    int64_t depth:  6;
+    uint64_t id   : 58;
+    uint64_t depth:  6;
 } cbt_Node;
 
 // create / destroy tree
@@ -143,7 +143,7 @@ static inline uint64_t cbt__MinValue(uint64_t a, uint64_t b)
 static void
 cbt__SetBitValue(uint64_t *bitField, int64_t bitID, uint64_t bitValue)
 {
-    const uint64_t bitMask = ~(1u << bitID);
+    const uint64_t bitMask = ~(1ULL << bitID);
 
 CBT_ATOMIC
     (*bitField)&= bitMask;
@@ -164,7 +164,7 @@ cbt__BitFieldInsert(
     uint64_t bitData
 ) {
     CBT_ASSERT(bitOffset < 64 && bitCount <= 64 && bitOffset + bitCount <= 64);
-    uint64_t bitMask = ~(~(0xFFFFFFFFFFFFFFFFu << bitCount) << bitOffset);
+    uint64_t bitMask = ~(~(0xFFFFFFFFFFFFFFFFULL << bitCount) << bitOffset);
 CBT_ATOMIC
     (*bitField)&= bitMask;
 CBT_ATOMIC
@@ -184,7 +184,7 @@ cbt__BitFieldExtract(
     int64_t bitCount
 ) {
     CBT_ASSERT(bitOffset < 64 && bitCount < 64 && bitOffset + bitCount <= 64);
-    uint64_t bitMask = ~(0xFFFFFFFFFFFFFFFFu << bitCount);
+    uint64_t bitMask = ~(0xFFFFFFFFFFFFFFFFULL << bitCount);
 
     return (bitField >> bitOffset) & bitMask;
 }
@@ -441,13 +441,13 @@ cbt__HeapArgs
 cbt__CreateHeapArgs(const cbt_Tree *tree, const cbt_Node node, int64_t bitCount)
 {
     int64_t alignedBitOffset = cbt__NodeBitID(tree, node);
-    int64_t maxBufferIndex = cbt__HeapUint64Size(tree->maxDepth) - 1LL;
+    int64_t maxBufferIndex = cbt__HeapUint64Size(tree->maxDepth) - 1;
     int64_t bufferIndexLSB = (alignedBitOffset >> 6);
-    int64_t bufferIndexMSB = cbt__MinValue(bufferIndexLSB + 1LL, maxBufferIndex);
+    int64_t bufferIndexMSB = cbt__MinValue(bufferIndexLSB + 1, maxBufferIndex);
     cbt__HeapArgs args;
 
-    args.bitOffsetLSB = alignedBitOffset & 63u;
-    args.bitCountLSB = cbt__MinValue(64u - args.bitOffsetLSB, bitCount);
+    args.bitOffsetLSB = alignedBitOffset & 63;
+    args.bitCountLSB = cbt__MinValue(64 - args.bitOffsetLSB, bitCount);
     args.bitCountMSB = bitCount - args.bitCountLSB;
     args.bitFieldLSB = &tree->heap[bufferIndexLSB];
     args.bitFieldMSB = &tree->heap[bufferIndexMSB];
@@ -565,7 +565,7 @@ static void cbt__ClearBuffer(cbt_Tree *tree)
  */
 CBTDEF const char *cbt_GetHeap(const cbt_Tree *tree)
 {
-    return (char *)tree->heap;
+    return (const char *)tree->heap;
 }
 
 
@@ -650,24 +650,24 @@ CBT_PARALLEL_FOR
         // 5-bits
         bitField = (bitField & 0x00FF00FF00FF00FFULL)
                  + ((bitField >>  8) & 0x00FF00FF00FF00FFULL);
-        bitData = ((bitField >>  0) & (31u <<  0))
-                | ((bitField >> 11) & (31u <<  5))
-                | ((bitField >> 22) & (31u << 10))
-                | ((bitField >> 33) & (31u << 15));
+        bitData = ((bitField >>  0) & (31ULL <<  0))
+                | ((bitField >> 11) & (31ULL <<  5))
+                | ((bitField >> 22) & (31ULL << 10))
+                | ((bitField >> 33) & (31ULL << 15));
         cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 4, depth - 4), 20ULL, bitData);
 
         // 6-bits
         bitField = (bitField & 0x0000FFFF0000FFFFULL)
                  + ((bitField >> 16) & 0x0000FFFF0000FFFFULL);
-        bitData = ((bitField >>  0) & (63u << 0))
-                | ((bitField >> 11) & (63u << 6));
+        bitData = ((bitField >>  0) & (63ULL << 0))
+                | ((bitField >> 26) & (63ULL << 6));
         cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 5, depth - 5), 12ULL, bitData);
 
         // 7-bits
         bitField = (bitField & 0x00000000FFFFFFFFULL)
                  + ((bitField >> 32) & 0x00000000FFFFFFFFULL);
         bitData = bitField;
-        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 6, depth - 6),  6ULL, bitData);
+        cbt__HeapWriteExplicit(tree, cbt__CreateNode(nodeID >> 6, depth - 6),  7ULL, bitData);
     }
 CBT_BARRIER
     depth-= 6;
@@ -679,8 +679,8 @@ CBT_BARRIER
 
 CBT_PARALLEL_FOR
         for (uint64_t j = minNodeID; j < maxNodeID; ++j) {
-            uint64_t x0 = cbt__HeapRead(tree, cbt__CreateNode(j << 1       , depth + 1));
-            uint64_t x1 = cbt__HeapRead(tree, cbt__CreateNode(j << 1 | 1uLL, depth + 1));
+            uint64_t x0 = cbt__HeapRead(tree, cbt__CreateNode(j << 1    , depth + 1));
+            uint64_t x1 = cbt__HeapRead(tree, cbt__CreateNode(j << 1 | 1, depth + 1));
 
             cbt__HeapWrite(tree, cbt__CreateNode(j, depth), x0 + x1);
         }
@@ -870,7 +870,7 @@ CBTDEF int64_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node)
 
     while (nodeIterator.id > 1u) {
         cbt_Node sibling = cbt__LeftSiblingNode_Fast(nodeIterator);
-        uint64_t nodeCount = cbt__HeapRead(tree, cbt__CreateNode(sibling.id, sibling.depth));
+        uint64_t nodeCount = cbt__HeapRead(tree, sibling);
 
         handle+= (nodeIterator.id & 1u) * nodeCount;
         nodeIterator = cbt__ParentNode_Fast(nodeIterator);
