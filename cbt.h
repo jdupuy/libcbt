@@ -58,8 +58,8 @@ CBTDEF void cbt_Update(cbt_Tree *tree,
 CBTDEF int64_t cbt_MaxDepth(const cbt_Tree *tree);
 CBTDEF int64_t cbt_NodeCount(const cbt_Tree *tree);
 CBTDEF bool cbt_IsLeafNode(const cbt_Tree *tree, const cbt_Node node);
-CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node);
 CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node);
+CBTDEF bool cbt_IsRootNode(                      const cbt_Node node);
 CBTDEF bool cbt_IsNullNode(                      const cbt_Node node);
 
 // node constructors
@@ -240,7 +240,7 @@ CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node)
  * IsRootNode -- Checks if a node is a root node
  *
  */
-CBTDEF bool cbt_IsRootNode(const cbt_Tree *tree, const cbt_Node node)
+CBTDEF bool cbt_IsRootNode(const cbt_Node node)
 {
     return (node.id == 1u);
 }
@@ -814,7 +814,7 @@ CBTDEF void cbt_MergeNode_Fast(cbt_Tree *tree, const cbt_Node node)
 
 CBTDEF void cbt_MergeNode(cbt_Tree *tree, const cbt_Node node)
 {
-    if (!cbt_IsRootNode(tree, node))
+    if (!cbt_IsRootNode(node))
         cbt_MergeNode_Fast(tree, node);
 }
 
@@ -855,7 +855,7 @@ CBTDEF cbt_Node cbt_DecodeNode(const cbt_Tree *tree, int64_t handle)
     while (cbt__HeapRead(tree, node) > 1u) {
         cbt_Node heapNode = cbt_CreateNode(node.id<<= 1u, ++node.depth);
         uint64_t cmp = cbt__HeapRead(tree, heapNode);
-        uint64_t b = handle < cmp ? 0 : 1;
+        uint64_t b = (uint64_t)handle < cmp ? 0u : 1u;
 
         node.id|= b;
         handle-= cmp * b;

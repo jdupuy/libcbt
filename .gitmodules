@@ -1,0 +1,9 @@
+[submodule "Examples/Submodules/Nuklear"]
+	path = Examples/Submodules/Nuklear
+	url = https://github.com/Immediate-Mode-UI/Nuklear.git
+[submodule "Examples/Submodules/glfw"]
+	path = Examples/Submodules/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Examples/Submodules/dj_opengl"]
+	path = Examples/Submodules/dj_opengl
+	url = https://github.com/jdupuy/dj_opengl.git

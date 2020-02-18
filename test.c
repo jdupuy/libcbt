@@ -4,15 +4,23 @@
 #include "cbt.h"
 #undef CBT_IMPLEMENTATION
 
-void update(cbt_Tree *tree, const cbt_Node node)
+#define LEB_IMPLEMENTATION
+#include "leb.h"
+#undef LEB_IMPLEMENTATION
+
+static void update(cbt_Tree *tree, const cbt_Node node, const void *userData)
 {
+    (void)userData;
+    
     if ((node.id & 1) == 0 && !cbt_IsCeilNode(tree, node)) {
         cbt_SplitNode_Fast(tree, node);
     }
 }
 
-void update2(cbt_Tree *tree, const cbt_Node node)
+static void update2(cbt_Tree *tree, const cbt_Node node, const void *userData)
 {
+    (void)userData;
+    
     if ((node.id & 1) == 0) {
         cbt_MergeNode_Fast(tree, node);
     }
@@ -96,7 +104,7 @@ uint64_t BitCount2(uint64_t x)
     return x;
 }
 
-int main(int argc, const char **argv)
+int main()
 {
 #if 0
     printf("%li\n", BitCount2(0xFFFFFFFFFFFFFFFFULL));
@@ -105,7 +113,7 @@ int main(int argc, const char **argv)
 #endif
 
 #if 1
-    int64_t depth = 34;
+    int64_t depth = 28;
     printf("=> %li\n", cbt__HeapByteSize(depth) >> 30);
     cbt_Tree *tree = cbt_Create(depth);
 
@@ -115,10 +123,10 @@ int main(int argc, const char **argv)
     cbt_ResetToDepth(tree, 12);
     printf("node_count: %li\n", cbt_NodeCount(tree));
     
-    cbt_Update(tree, update);
+    cbt_Update(tree, update, NULL);
     printf("node_count: %li\n", cbt_NodeCount(tree));
 
-    cbt_Update(tree, update2);
+    cbt_Update(tree, update2, NULL);
     printf("node_count: %li\n", cbt_NodeCount(tree));
 
     cbt_ResetToDepth(tree, depth);

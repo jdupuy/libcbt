@@ -167,7 +167,7 @@ leb_MergeNode2D(
     const cbt_Node node,
     const leb_DiamondParent diamond
 ) {
-    if (!cbt_IsRootNode(leb, node)) {
+    if (!cbt_IsRootNode(node)) {
         cbt_Node dualNode = cbt_RightChildNode(diamond.top);
         bool b1 = cbt_IsLeafNode(leb, cbt_SiblingNode_Fast(node));
         bool b2 = cbt_IsLeafNode(leb, dualNode);
