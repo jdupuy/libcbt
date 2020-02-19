@@ -113,9 +113,11 @@ int main()
 #endif
 
 #if 1
-    int64_t depth = 32;
+    int64_t depth = 30;
     printf("=> %li\n", cbt__HeapByteSize(depth) >> 30);
     cbt_Tree *tree = cbt_Create(depth);
+
+    printf("maxDepth: %li (%li)\n", cbt_MaxDepth(tree), depth);
 
     cbt_ResetToDepth(tree, 8);
     printf("node_count: %li\n", cbt_NodeCount(tree));

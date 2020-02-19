@@ -137,6 +137,23 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 #   define CBT_BARRIER         _Pragma("omp barrier")
 #endif
 
+
+/*******************************************************************************
+ * FindLSB -- Returns the position of the least significant bit
+ *
+ */
+static inline int64_t cbt__FindLSB(uint64_t x)
+{
+    int64_t lsb = 0;
+
+    while ((x & (1ULL << lsb)) == 0 && lsb < 64) {
+        ++lsb;
+    }
+
+    return lsb;
+}
+
+
 /*******************************************************************************
  * MinValue -- Returns the minimum value between two inputs
  *
@@ -207,7 +224,6 @@ cbt__BitFieldExtract(
  */
 struct cbt_Tree {
     uint64_t *heap;
-    int64_t maxDepth;
 };
 
 
@@ -721,9 +737,10 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int64_t maxDepth, int64_t depth)
     CBT_ASSERT(maxDepth <= 58 && "maxDepth must be at most 58");
     cbt_Tree *tree = (cbt_Tree *)CBT_MALLOC(sizeof(*tree));
 
-    tree->maxDepth = maxDepth;
     tree->heap = (uint64_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
-    tree->heap[0] = 1ULL << (maxDepth + 3); // store max Depth
+    tree->heap[0] = 1ULL << (maxDepth + 2); // store max Depth
+
+    printf("MaxDepth: %li\n", cbt_MaxDepth(tree));
 
     cbt_ResetToDepth(tree, depth);
 
@@ -838,7 +855,11 @@ CBTDEF void cbt_MergeNode(cbt_Tree *tree, const cbt_Node node)
  */
 CBTDEF int64_t cbt_MaxDepth(const cbt_Tree *tree)
 {
+#if 0
     return tree->maxDepth;
+#else
+    return cbt__FindLSB(tree->heap[0]) - 2;
+#endif
 }
 
 
