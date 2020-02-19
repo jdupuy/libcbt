@@ -63,7 +63,7 @@ CBTDEF bool cbt_IsRootNode(                      const cbt_Node node);
 CBTDEF bool cbt_IsNullNode(                      const cbt_Node node);
 
 // node constructors
-CBTDEF cbt_Node cbt_CreateNode(uint64_t id, int64_t depth);
+CBTDEF cbt_Node cbt_CreateNode           (uint64_t id, int64_t depth);
 CBTDEF cbt_Node cbt_ParentNode           (const cbt_Node node);
 CBTDEF cbt_Node cbt_ParentNode_Fast      (const cbt_Node node);
 CBTDEF cbt_Node cbt_SiblingNode          (const cbt_Node node);
@@ -232,7 +232,7 @@ CBTDEF cbt_Node cbt_CreateNode(uint64_t id, int64_t depth)
  */
 CBTDEF bool cbt_IsCeilNode(const cbt_Tree *tree, const cbt_Node node)
 {
-    return (node.depth == tree->maxDepth);
+    return (node.depth == cbt_MaxDepth(tree));
 }
 
 
@@ -277,7 +277,9 @@ CBTDEF cbt_Node cbt_ParentNode(const cbt_Node node)
  */
 static cbt_Node cbt__CeilNode_Fast(const cbt_Tree *tree, const cbt_Node node)
 {
-    return cbt_CreateNode(node.id << (tree->maxDepth - node.depth), tree->maxDepth);
+    int64_t maxDepth = cbt_MaxDepth(tree);
+
+    return cbt_CreateNode(node.id << (maxDepth - node.depth), maxDepth);
 }
 
 static cbt_Node cbt__CeilNode(const cbt_Tree *tree, const cbt_Node node)
@@ -401,7 +403,7 @@ static inline int64_t cbt__HeapUint64Size(int64_t treeMaxDepth)
 static inline int64_t cbt__NodeBitID(const cbt_Tree *tree, const cbt_Node node)
 {
     int64_t tmp1 = 2LL << node.depth;
-    int64_t tmp2 = 1LL + tree->maxDepth - node.depth;
+    int64_t tmp2 = 1LL + cbt_MaxDepth(tree) - node.depth;
 
     return tmp1 + node.id * tmp2;
 }
@@ -427,7 +429,7 @@ cbt__NodeBitID_BitField(const cbt_Tree *tree, const cbt_Node node)
 static inline
 int64_t cbt__NodeBitSize(const cbt_Tree *tree, const cbt_Node node)
 {
-    return tree->maxDepth - node.depth + 1;
+    return cbt_MaxDepth(tree) - node.depth + 1;
 }
 
 
@@ -451,7 +453,7 @@ cbt__HeapArgs
 cbt__CreateHeapArgs(const cbt_Tree *tree, const cbt_Node node, int64_t bitCount)
 {
     int64_t alignedBitOffset = cbt__NodeBitID(tree, node);
-    int64_t maxBufferIndex = cbt__HeapUint64Size(tree->maxDepth) - 1;
+    int64_t maxBufferIndex = cbt__HeapUint64Size(cbt_MaxDepth(tree)) - 1;
     int64_t bufferIndexLSB = (alignedBitOffset >> 6);
     int64_t bufferIndexMSB = cbt__MinValue(bufferIndexLSB + 1, maxBufferIndex);
     cbt__HeapArgs args;
@@ -550,22 +552,32 @@ cbt__HeapWrite_BitField(
 
 
 /*******************************************************************************
+ * ClearBitField -- Clears the bitfield
+ *
+ */
+static void cbt__ClearBitfield(cbt_Tree *tree)
+{
+    int64_t maxDepth = cbt_MaxDepth(tree);
+    uint64_t minNodeID = 1ULL << maxDepth;
+    uint64_t maxNodeID = 2ULL << maxDepth;
+
+CBT_PARALLEL_FOR
+    for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
+        cbt_Node node = cbt_CreateNode(nodeID, maxDepth);
+
+        cbt__HeapWrite_BitField(tree, node, 0u);
+    }
+CBT_BARRIER
+}
+
+
+/*******************************************************************************
  * IsLeafNode -- Checks if a node is a leaf node, i.e., that has no descendants
  *
  */
 CBTDEF bool cbt_IsLeafNode(const cbt_Tree *tree, const cbt_Node node)
 {
     return (cbt__HeapRead(tree, node) == 1u);
-}
-
-
-/*******************************************************************************
- * ClearData -- Resets the data buffer stored by a LEB
- *
- */
-static void cbt__ClearBuffer(cbt_Tree *tree)
-{
-    CBT_MEMSET(tree->heap, 0, cbt__HeapByteSize(tree->maxDepth));
 }
 
 
@@ -595,7 +607,7 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *buffer)
  */
 CBTDEF int64_t cbt_HeapByteSize(const cbt_Tree *tree)
 {
-    return cbt__HeapByteSize(tree->maxDepth);
+    return cbt__HeapByteSize(cbt_MaxDepth(tree));
 }
 
 
@@ -605,7 +617,7 @@ CBTDEF int64_t cbt_HeapByteSize(const cbt_Tree *tree)
  */
 static void cbt__ComputeSumReduction(cbt_Tree *tree)
 {
-    int64_t depth = tree->maxDepth;
+    int64_t depth = cbt_MaxDepth(tree);
     uint64_t minNodeID = (1ULL << depth);
     uint64_t maxNodeID = (2ULL << depth);
 
@@ -711,7 +723,8 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int64_t maxDepth, int64_t depth)
 
     tree->maxDepth = maxDepth;
     tree->heap = (uint64_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
-    CBT_ASSERT(tree->heap != NULL && "Memory allocation failed");
+    tree->heap[0] = 1ULL << (maxDepth + 3); // store max Depth
+
     cbt_ResetToDepth(tree, depth);
 
     return tree;
@@ -741,11 +754,11 @@ CBTDEF void cbt_Release(cbt_Tree *tree)
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int64_t depth)
 {
     CBT_ASSERT(depth >= 0 && "depth must be at least equal to 0");
-    CBT_ASSERT(depth <= tree->maxDepth && "depth must be at most equal to maxDepth");
+    CBT_ASSERT(depth <= cbt_MaxDepth(tree) && "depth must be at most equal to maxDepth");
     uint64_t minNodeID = 1ULL << depth;
     uint64_t maxNodeID = 2ULL << depth;
 
-    cbt__ClearBuffer(tree);
+    cbt__ClearBitfield(tree);
 
 CBT_PARALLEL_FOR
     for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
@@ -765,7 +778,7 @@ CBT_BARRIER
  */
 CBTDEF void cbt_ResetToCeil(cbt_Tree *tree)
 {
-    cbt_ResetToDepth(tree, tree->maxDepth);
+    cbt_ResetToDepth(tree, cbt_MaxDepth(tree));
 }
 
 
