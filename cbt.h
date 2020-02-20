@@ -146,7 +146,7 @@ static inline int64_t cbt__FindLSB(uint64_t x)
 {
     int64_t lsb = 0;
 
-    while ((x & (1ULL << lsb)) == 0 && lsb < 64) {
+    while (((x >> lsb) & 1u) == 0u) {
         ++lsb;
     }
 
@@ -739,8 +739,6 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int64_t maxDepth, int64_t depth)
 
     tree->heap = (uint64_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
     tree->heap[0] = 1ULL << (maxDepth + 2); // store max Depth
-
-    printf("MaxDepth: %li\n", cbt_MaxDepth(tree));
 
     cbt_ResetToDepth(tree, depth);
 

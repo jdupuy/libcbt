@@ -113,7 +113,7 @@ int main()
 #endif
 
 #if 1
-    int64_t depth = 30;
+    int64_t depth = 34;
     printf("=> %li\n", cbt__HeapByteSize(depth) >> 30);
     cbt_Tree *tree = cbt_Create(depth);
 
