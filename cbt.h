@@ -6,7 +6,6 @@ by Jonathan Dupuy
    define CBT_ASSERT(x) to avoid using assert.h
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
-   define CBT_MEMSET(ptr, value, num) to use your own memset routine
    define CBT_MEMCPY(dst, src, num) to use your own memcpy routine
 */
 
@@ -115,11 +114,6 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
 #    ifndef CBT_FREE
 #        error CBT_MALLOC defined without CBT_FREE
 #    endif
-#endif
-
-#ifndef CBT_MEMSET
-#    include <string.h>
-#    define CBT_MEMSET(ptr, value, num) memset(ptr, value, num)
 #endif
 
 #ifndef CBT_MEMCPY
@@ -848,6 +842,26 @@ CBTDEF void cbt_MergeNode(cbt_Tree *tree, const cbt_Node node)
 
 
 /*******************************************************************************
+ * Update -- Split or merge each node in parallel
+ *
+ * The user provides an updater function that is responsible for
+ * splitting or merging each node.
+ *
+ */
+CBTDEF void
+cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater, const void *userData)
+{
+CBT_PARALLEL_FOR
+    for (int64_t handle = 0; handle < cbt_NodeCount(tree); ++handle) {
+        updater(tree, cbt_DecodeNode(tree, handle), userData);
+    }
+CBT_BARRIER
+
+    cbt__ComputeSumReduction(tree);
+}
+
+
+/*******************************************************************************
  * MaxDepth -- Returns the max LEB depth
  *
  */
@@ -921,25 +935,6 @@ CBTDEF int64_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node)
     return handle;
 }
 
-
-/*******************************************************************************
- * Update -- Split or merge each node in parallel
- *
- * The user provides an updater function that is responsible for
- * splitting or merging each node.
- *
- */
-CBTDEF void
-cbt_Update(cbt_Tree *tree, cbt_UpdateCallback updater, const void *userData)
-{
-CBT_PARALLEL_FOR
-    for (int64_t handle = 0; handle < cbt_NodeCount(tree); ++handle) {
-        updater(tree, cbt_DecodeNode(tree, handle), userData);
-    }
-CBT_BARRIER
-
-    cbt__ComputeSumReduction(tree);
-}
 
 #undef CBT_ATOMIC
 #undef CBT_PARALLEL_FOR

@@ -32,6 +32,7 @@ typedef struct {
     cbt_Node left, right, edge, node;
 } leb_NodeAndNeighbors;
 
+
 // manipulation
 LEBDEF void leb_SplitNode2D(cbt_Tree *leb,
                             const cbt_Node node);

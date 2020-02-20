@@ -104,6 +104,18 @@ uint64_t BitCount2(uint64_t x)
     return x;
 }
 
+leb_SameDepthNeighborIDs
+DecodeSameDepthNeighborIDs(const cbt_Node node)
+{
+    leb_SameDepthNeighborIDs nodeIDs = {1ULL, 1ULL, 1ULL, 1ULL};
+
+    for (int64_t bitID = node.depth - 1; bitID >= 0; --bitID) {
+        nodeIDs = leb__SplitNodeIDs(nodeIDs, leb__GetBitValue(node.id, bitID));
+    }
+
+    return nodeIDs;
+}
+
 int main()
 {
 #if 0
@@ -138,5 +150,24 @@ int main()
     printf("node_count: %li (%li)\n", cbt_NodeCount(tree), 1L << (depth / 2));
 
     cbt_Release(tree);
+#endif
+
+#if 0
+    {
+        int64_t maxDepth = 3;
+
+        for (int64_t nodeDepth = 0; nodeDepth <= maxDepth; ++nodeDepth) {
+            uint64_t minNodeID = 1ULL << nodeDepth;
+            uint64_t maxNodeID = 2ULL << nodeDepth;
+
+            for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
+                cbt_Node node = cbt_CreateNode(nodeID, nodeDepth);
+                leb_SameDepthNeighborIDs ng = DecodeSameDepthNeighborIDs(node);
+
+                printf("{%2lu, %2lu, %2lu, %2lu} ", ng.left, ng.right, ng.edge, ng.node);
+            }
+            printf("\n"); fflush(stdout);
+        }
+    }
 #endif
 }
