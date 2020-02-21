@@ -32,6 +32,36 @@ typedef struct {
     cbt_Node left, right, edge, node;
 } leb_NodeAndNeighbors;
 
+// triangle mesh
+typedef struct {
+    cbt_Tree **tree;
+    const int32_t *connectivity[3];
+    int64_t size;
+} leb_TriangleMesh;
+
+typedef struct {
+    cbt_Node node;
+    int64_t treeID;
+} leb_Node;
+
+// update
+void update(leb_TriangleMesh *mesh)
+{
+    for (int64_t treeID = 0; treeID < mesh->size; ++treeID) {
+        cbt_Tree *tree = mesh->trees[treeID];
+
+        for (int64_t handleID = 0; handleID < cbt_NodeCount(tree); ++handleID) {
+            cbt_Node node = cbt_DecodeNode(tree, handleID);
+
+            // split
+            if (true) {
+                leb_SplitNode2D(mesh, node);
+            }
+
+        }
+    }
+}
+
 
 // manipulation
 LEBDEF void leb_SplitNode2D(cbt_Tree *leb,
@@ -41,9 +71,9 @@ LEBDEF void leb_MergeNode2D(cbt_Tree *leb,
                             const leb_DiamondParent diamond);
 
 // O(depth) queries
+LEBDEF leb_SameDepthNeighborIDs leb_DecodeSameDepthNeighborIDs(const cbt_Node node);
 LEBDEF leb_NodeAndNeighbors leb_DecodeNodeAndNeighbors(const cbt_Tree *leb,
                                                        int64_t handle);
-LEBDEF leb_SameDepthNeighborIDs leb_DecodeSameDepthNeighborIDs(const cbt_Node node);
 LEBDEF leb_DiamondParent leb_DecodeDiamondParent(const cbt_Node node);
 
 // subdivision routines

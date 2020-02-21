@@ -436,8 +436,8 @@ cbt__NodeBitID_BitField(const cbt_Tree *tree, const cbt_Node node)
  * NodeBitSize -- Returns the number of bits storing the input node value
  *
  */
-static inline
-int64_t cbt__NodeBitSize(const cbt_Tree *tree, const cbt_Node node)
+static inline int64_t
+cbt__NodeBitSize(const cbt_Tree *tree, const cbt_Node node)
 {
     return cbt_MaxDepth(tree) - node.depth + 1;
 }
