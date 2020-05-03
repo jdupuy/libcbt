@@ -27,8 +27,8 @@ extern "C" {
 
 typedef struct cbt_Tree cbt_Tree;
 typedef struct {
-    uint64_t id   : 58;
-    uint64_t depth:  6;
+    uint64_t id   : 58; // heapID
+    uint64_t depth:  6; // log2(heapID)
 } cbt_Node;
 
 // create / destroy tree
@@ -83,7 +83,7 @@ CBTDEF int64_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node);
 // serialization
 CBTDEF int64_t cbt_HeapByteSize(const cbt_Tree *tree);
 CBTDEF const char *cbt_GetHeap(const cbt_Tree *tree);
-CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heap);
+CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heapToCopy);
 
 #ifdef __cplusplus
 } // extern "C"
@@ -222,21 +222,6 @@ struct cbt_Tree {
 
 
 /*******************************************************************************
- * CreateNode -- Constructor for the Node data structure
- *
- */
-CBTDEF cbt_Node cbt_CreateNode(uint64_t id, int64_t depth)
-{
-    cbt_Node node;
-
-    node.id = id;
-    node.depth = depth;
-
-    return node;
-}
-
-
-/*******************************************************************************
  * IsCeilNode -- Checks if a node is a ceil node, i.e., that can not split further
  *
  */
@@ -263,6 +248,21 @@ CBTDEF bool cbt_IsRootNode(const cbt_Node node)
 CBTDEF bool cbt_IsNullNode(const cbt_Node node)
 {
     return (node.id == 0u);
+}
+
+
+/*******************************************************************************
+ * CreateNode -- Constructor for the Node data structure
+ *
+ */
+CBTDEF cbt_Node cbt_CreateNode(uint64_t id, int64_t depth)
+{
+    cbt_Node node;
+
+    node.id = id;
+    node.depth = depth;
+
+    return node;
 }
 
 
@@ -732,7 +732,7 @@ CBTDEF cbt_Tree *cbt_CreateAtDepth(int64_t maxDepth, int64_t depth)
     cbt_Tree *tree = (cbt_Tree *)CBT_MALLOC(sizeof(*tree));
 
     tree->heap = (uint64_t *)CBT_MALLOC(cbt__HeapByteSize(maxDepth));
-    tree->heap[0] = 1ULL << (maxDepth + 2); // store max Depth
+    tree->heap[0] = 1ULL << (maxDepth); // store max Depth
 
     cbt_ResetToDepth(tree, depth);
 
@@ -867,11 +867,7 @@ CBT_BARRIER
  */
 CBTDEF int64_t cbt_MaxDepth(const cbt_Tree *tree)
 {
-#if 0
-    return tree->maxDepth;
-#else
-    return cbt__FindLSB(tree->heap[0]) - 2;
-#endif
+    return cbt__FindLSB(tree->heap[0]);
 }
 
 
