@@ -7,6 +7,7 @@ by Jonathan Dupuy
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
    define CBT_MEMCPY(dst, src, num) to use your own memcpy routine
+   define CBT_MEMSET(dst, val, num) to use your own memset routine
 */
 
 #ifndef CBT_INCLUDE_CBT_H
@@ -119,6 +120,11 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heapToCopy);
 #ifndef CBT_MEMCPY
 #    include <string.h>
 #    define CBT_MEMCPY(dst, src, num) memcpy(dst, src, num)
+#endif
+
+#ifndef CBT_MEMSET
+#    include <string.h>
+#    define CBT_MEMSET(dst, val, num) memset(dst, val, num)
 #endif
 
 #ifndef _OPENMP
@@ -568,16 +574,11 @@ cbt__HeapWrite_BitField(
 static void cbt__ClearBitfield(cbt_Tree *tree)
 {
     int64_t maxDepth = cbt_MaxDepth(tree);
-    uint64_t minNodeID = 1ULL << maxDepth;
-    uint64_t maxNodeID = 2ULL << maxDepth;
+    int64_t bitFieldByteSize = 1LL << (maxDepth - 3);
+    int64_t bitFieldByteOffset = 1LL << (maxDepth - 2);
+    char *bitField = (char *)&tree->heap[0] + bitFieldByteOffset;
 
-CBT_PARALLEL_FOR
-    for (uint64_t nodeID = minNodeID; nodeID < maxNodeID; ++nodeID) {
-        cbt_Node node = cbt_CreateNode(nodeID, maxDepth);
-
-        cbt__HeapWrite_BitField(tree, node, 0u);
-    }
-CBT_BARRIER
+    CBT_MEMSET(bitField, 0, bitFieldByteSize);
 }
 
 
