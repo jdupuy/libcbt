@@ -1,8 +1,7 @@
-/* cbt.h - public domain library for creating and processing binary trees in parallel
+/* cbt.h - public domain library for building binary trees in parallel
 by Jonathan Dupuy
 
    INTERFACING
-   define CBT_LOG(format, ...) to use your own logger (default prints to stdout)
    define CBT_ASSERT(x) to avoid using assert.h
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
@@ -64,6 +63,7 @@ CBTDEF bool cbt_IsNullNode(                      const cbt_Node node);
 
 // node constructors
 CBTDEF cbt_Node cbt_CreateNode           (uint64_t id, int64_t depth);
+CBTDEF cbt_Node cbt_CreateNodeFromHeapID (uint64_t heapID);
 CBTDEF cbt_Node cbt_ParentNode           (const cbt_Node node);
 CBTDEF cbt_Node cbt_ParentNode_Fast      (const cbt_Node node);
 CBTDEF cbt_Node cbt_SiblingNode          (const cbt_Node node);
@@ -78,7 +78,7 @@ CBTDEF cbt_Node cbt_RightChildNode       (const cbt_Node node);
 CBTDEF cbt_Node cbt_RightChildNode_Fast  (const cbt_Node node);
 
 // O(depth) queries
-CBTDEF cbt_Node cbt_DecodeNode(const cbt_Tree *tree, int64_t handle);
+CBTDEF cbt_Node cbt_DecodeNode(const cbt_Tree *tree, int64_t leafID);
 CBTDEF int64_t cbt_EncodeNode(const cbt_Tree *tree, const cbt_Node node);
 
 // serialization
@@ -100,11 +100,6 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heapToCopy);
 #ifndef CBT_ASSERT
 #    include <assert.h>
 #    define CBT_ASSERT(x) assert(x)
-#endif
-
-#ifndef CBT_LOG
-#    include <stdio.h>
-#    define CBT_LOG(format, ...) do { fprintf(stdout, format, ##__VA_ARGS__); fflush(stdout); } while(0)
 #endif
 
 #ifndef CBT_MALLOC
@@ -151,6 +146,23 @@ static inline int64_t cbt__FindLSB(uint64_t x)
     }
 
     return lsb;
+}
+
+
+/*******************************************************************************
+ * FindMSB -- Returns the position of the most significant bit
+ *
+ */
+static inline int64_t cbt__FindMSB(uint64_t x)
+{
+    int64_t msb = 0;
+
+    while (x > 1u) {
+        ++msb;
+        x = x >> 1;
+    }
+
+    return msb;
 }
 
 
@@ -254,6 +266,16 @@ CBTDEF bool cbt_IsRootNode(const cbt_Node node)
 CBTDEF bool cbt_IsNullNode(const cbt_Node node)
 {
     return (node.id == 0u);
+}
+
+
+/*******************************************************************************
+ * CreateNode -- Constructor for the Node data structure
+ *
+ */
+CBTDEF cbt_Node cbt_CreateNodeFromHeapID(uint64_t heapID)
+{
+    return cbt_CreateNode(heapID, cbt__FindMSB(heapID));
 }
 
 
