@@ -11,7 +11,7 @@ layout (local_size_x = CBT_LOCAL_SIZE_X,
 
 void main(void)
 {
-    const int cbtID = 0;
+    const int cbtID = u_CbtID;
     uint cnt = (1u << u_PassID);
     uint threadID = gl_GlobalInvocationID.x;
 
