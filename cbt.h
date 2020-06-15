@@ -566,7 +566,7 @@ cbt__HeapReadExplicit(
     return (lsb | (msb << args.bitCountLSB));
 }
 
-static uint64_t cbt_HeapRead(const cbt_Tree *tree, const cbt_Node node)
+CBTDEF uint64_t cbt_HeapRead(const cbt_Tree *tree, const cbt_Node node)
 {
     return cbt__HeapReadExplicit(tree, node, cbt__NodeBitSize(tree, node));
 }
