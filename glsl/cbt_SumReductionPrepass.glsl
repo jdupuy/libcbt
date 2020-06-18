@@ -1,7 +1,6 @@
 // requires cbt.glsl
 #ifndef CBT_LOCAL_SIZE_X
 #   define CBT_LOCAL_SIZE_X 256
-#   warn CBT_LOCAL_SIZE_X undefined, setting to 256
 #endif
 uniform int u_CbtID = 0;
 uniform int u_PassID;
@@ -17,14 +16,14 @@ void main(void)
 
     if (threadID < cnt) {
         uint nodeID = threadID + cnt;
-        uint alignedBitOffset = cbt__NodeBitID(cbtID, cbt_Node(nodeID, u_PassID));
-        uint bitField = u_LebBuffers[cbtID].heap[alignedBitOffset >> 5u];
+        uint alignedBitOffset = cbt__NodeBitID(cbtID, cbt_CreateNode(nodeID, u_PassID));
+        uint bitField = u_CbtBuffers[cbtID].heap[alignedBitOffset >> 5u];
         uint bitData = 0u;
 
         // 2-bits
         bitField = (bitField & 0x55555555u) + ((bitField >> 1u) & 0x55555555u);
         bitData = bitField;
-        u_LebBuffers[cbtID].heap[(alignedBitOffset - cnt) >> 5u] = bitData;
+        u_CbtBuffers[cbtID].heap[(alignedBitOffset - cnt) >> 5u] = bitData;
 
         // 3-bits
         bitField = (bitField & 0x33333333u) + ((bitField >>  2u) & 0x33333333u);
@@ -36,7 +35,7 @@ void main(void)
                 | ((bitField >> 5u) & (7u << 15u))
                 | ((bitField >> 6u) & (7u << 18u))
                 | ((bitField >> 7u) & (7u << 21u));
-        cbt__HeapWriteExplicit(cbtID, cbt_Node(nodeID >> 2u, u_PassID - 2), 24, bitData);
+        cbt__HeapWriteExplicit(cbtID, cbt_CreateNode(nodeID >> 2u, u_PassID - 2), 24, bitData);
 
         // 4-bits
         bitField = (bitField & 0x0F0F0F0Fu) + ((bitField >>  4u) & 0x0F0F0F0Fu);
@@ -44,17 +43,17 @@ void main(void)
                 | ((bitField >>  4u) & (15u <<  4u))
                 | ((bitField >>  8u) & (15u <<  8u))
                 | ((bitField >> 12u) & (15u << 12u));
-        cbt__HeapWriteExplicit(cbtID, cbt_Node(nodeID >> 3u, u_PassID - 3), 16, bitData);
+        cbt__HeapWriteExplicit(cbtID, cbt_CreateNode(nodeID >> 3u, u_PassID - 3), 16, bitData);
 
         // 5-bits
         bitField = (bitField & 0x00FF00FFu) + ((bitField >>  8u) & 0x00FF00FFu);
         bitData = ((bitField >>  0u) & (31u << 0u))
                 | ((bitField >> 11u) & (31u << 5u));
-        cbt__HeapWriteExplicit(cbtID, cbt_Node(nodeID >> 4u, u_PassID - 4), 10, bitData);
+        cbt__HeapWriteExplicit(cbtID, cbt_CreateNode(nodeID >> 4u, u_PassID - 4), 10, bitData);
 
         // 6-bits
         bitField = (bitField & 0x0000FFFFu) + ((bitField >> 16u) & 0x0000FFFFu);
         bitData = bitField;
-        cbt__HeapWriteExplicit(cbtID, cbt_Node(nodeID >> 5u, u_PassID - 5),  6, bitData);
+        cbt__HeapWriteExplicit(cbtID, cbt_CreateNode(nodeID >> 5u, u_PassID - 5),  6, bitData);
     }
 }

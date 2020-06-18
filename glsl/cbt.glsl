@@ -9,7 +9,6 @@ by Jonathan Dupuy
 #endif
 #ifndef CBT_BUFFER_COUNT
 #   define CBT_BUFFER_COUNT 1
-#   warn CBT_BUFFER_COUNT undefined, assuming only one buffer
 #endif
 layout(std430, binding = CBT_BUFFER_BINDING)
 buffer cbt_Buffer {

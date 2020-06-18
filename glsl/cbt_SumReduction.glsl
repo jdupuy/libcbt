@@ -1,7 +1,6 @@
 // requires cbt.glsl
 #ifndef CBT_LOCAL_SIZE_X
 #   define CBT_LOCAL_SIZE_X 256
-#   warn CBT_LOCAL_SIZE_X undefined, setting to 256
 #endif
 uniform int u_CbtID = 0;
 uniform int u_PassID;
@@ -20,6 +19,6 @@ void main(void)
         uint x0 = cbt__HeapRead(cbtID, cbt_CreateNode(nodeID << 1u     , u_PassID + 1));
         uint x1 = cbt__HeapRead(cbtID, cbt_CreateNode(nodeID << 1u | 1u, u_PassID + 1));
 
-        cbt__HeapWrite(cbtID, cbt_Node(nodeID, u_PassID), x0 + x1);
+        cbt__HeapWrite(cbtID, cbt_CreateNode(nodeID, u_PassID), x0 + x1);
     }
 }
