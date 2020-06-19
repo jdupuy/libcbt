@@ -4,16 +4,16 @@ by Jonathan Dupuy
 */
 
 // buffer binding (allows for simultaneous use of multiple CBTs)
-#ifndef CBT_BUFFER_BINDING
-#   error User must specify the binding of the CBT buffer
+#ifndef CBT_HEAP_BUFFER_BINDING
+#   error User must specify the binding of the CBT heap buffer
 #endif
-#ifndef CBT_BUFFER_COUNT
-#   define CBT_BUFFER_COUNT 1
+#ifndef CBT_HEAP_BUFFER_COUNT
+#   define CBT_HEAP_BUFFER_COUNT 1
 #endif
-layout(std430, binding = CBT_BUFFER_BINDING)
+layout(std430, binding = CBT_HEAP_BUFFER_BINDING)
 buffer cbt_Buffer {
     uint heap[];
-} u_CbtBuffers[CBT_BUFFER_COUNT];
+} u_CbtBuffers[CBT_HEAP_BUFFER_COUNT];
 
 // data structures
 struct cbt_Node {
@@ -28,6 +28,7 @@ void cbt_MergeNode_Fast(const int cbtID, in const cbt_Node node);
 void cbt_MergeNode     (const int cbtID, in const cbt_Node node);
 
 // O(1) queries
+uint cbt_HeapRead(const int cbtID, in const cbt_Node node);
 int cbt_MaxDepth(const int cbtID);
 uint cbt_NodeCount(const int cbtID);
 bool cbt_IsLeafNode(const int cbtID, in const cbt_Node node);
@@ -432,7 +433,7 @@ cbt__HeapReadExplicit(const int cbtID, in const cbt_Node node, int bitCount)
     return (lsb | (msb << args.bitCountLSB));
 }
 
-uint cbt__HeapRead(const int cbtID, in const cbt_Node node)
+uint cbt_HeapRead(const int cbtID, in const cbt_Node node)
 {
     return cbt__HeapReadExplicit(cbtID, node, cbt__NodeBitSize(cbtID, node));
 }
@@ -473,7 +474,7 @@ uint cbt__HeapRead_BitField(const int cbtID, in const cbt_Node node)
  */
 bool cbt_IsLeafNode(const int cbtID, in const cbt_Node node)
 {
-    return (cbt__HeapRead(cbtID, node) == 1u);
+    return (cbt_HeapRead(cbtID, node) == 1u);
 }
 
 
@@ -523,7 +524,7 @@ int cbt_MaxDepth(const int cbtID)
  */
 uint cbt_NodeCount(const int cbtID)
 {
-    return cbt__HeapRead(cbtID, cbt_CreateNode(1u, 0));
+    return cbt_HeapRead(cbtID, cbt_CreateNode(1u, 0));
 }
 
 
@@ -535,9 +536,9 @@ cbt_Node cbt_DecodeNode(const int cbtID, uint nodeID)
 {
     cbt_Node node = cbt_CreateNode(1u, 0);
 
-    while (cbt__HeapRead(cbtID, node) > 1u) {
+    while (cbt_HeapRead(cbtID, node) > 1u) {
         cbt_Node leftChild = cbt__LeftChildNode_Fast(node);
-        uint cmp = cbt__HeapRead(cbtID, leftChild);
+        uint cmp = cbt_HeapRead(cbtID, leftChild);
         uint b = nodeID < cmp ? 0u : 1u;
 
         node = leftChild;
@@ -562,7 +563,7 @@ uint cbt_EncodeNode(const int cbtID, in const cbt_Node node)
 
     while (nodeIterator.id > 1u) {
         cbt_Node sibling = cbt__LeftSiblingNode_Fast(nodeIterator);
-        uint nodeCount = cbt__HeapRead(cbtID, sibling);
+        uint nodeCount = cbt_HeapRead(cbtID, sibling);
 
         nodeID+= (nodeIterator.id & 1u) * nodeCount;
         nodeIterator = cbt_ParentNode(nodeIterator);
