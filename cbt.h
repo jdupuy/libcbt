@@ -6,7 +6,6 @@ by Jonathan Dupuy
    define CBT_MALLOC(x) to use your own memory allocator
    define CBT_FREE(x) to use your own memory deallocator
    define CBT_MEMCPY(dst, src, num) to use your own memcpy routine
-   define CBT_MEMSET(dst, val, num) to use your own memset routine
 */
 
 #ifndef CBT_INCLUDE_CBT_H
@@ -116,11 +115,6 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *heapToCopy);
 #ifndef CBT_MEMCPY
 #    include <string.h>
 #    define CBT_MEMCPY(dst, src, num) memcpy(dst, src, num)
-#endif
-
-#ifndef CBT_MEMSET
-#    include <string.h>
-#    define CBT_MEMSET(dst, val, num) memset(dst, val, num)
 #endif
 
 #ifndef _OPENMP
@@ -475,7 +469,7 @@ cbt__NodeBitSize(const cbt_Tree *tree, const cbt_Node node)
 /*******************************************************************************
  * HeapArgs
  *
- * The LEB heap data structure uses an array of 64-bit words to store its data.
+ * The CBT heap data structure uses an array of 64-bit words to store its data.
  * Whenever we need to access a certain bit range, we need to query two such
  * words (because sometimes the requested bit range overlaps two 64-bit words).
  * The HeapArg data structure provides arguments for reading from and/or
@@ -597,11 +591,14 @@ cbt__HeapWrite_BitField(
 static void cbt__ClearBitfield(cbt_Tree *tree)
 {
     int64_t maxDepth = cbt_MaxDepth(tree);
-    int64_t bitFieldByteSize = 1LL << (maxDepth - 3);
-    int64_t bitFieldByteOffset = 1LL << (maxDepth - 2);
-    char *bitField = (char *)&tree->heap[0] + bitFieldByteOffset;
+    int64_t bufferMinID = 1LL << (maxDepth - 5);
+    int64_t bufferMaxID = cbt__HeapUint64Size(maxDepth);
 
-    CBT_MEMSET(bitField, 0, bitFieldByteSize);
+CBT_PARALLEL_FOR
+    for (int bufferID = bufferMinID; bufferID < bufferMaxID; ++bufferID) {
+        tree->heap[bufferID] = 0;
+    }
+CBT_BARRIER
 }
 
 
@@ -636,7 +633,7 @@ CBTDEF void cbt_SetHeap(cbt_Tree *tree, const char *buffer)
 
 
 /*******************************************************************************
- * HeapByteSize -- Returns the amount of bytes consumed by the LEB heap
+ * HeapByteSize -- Returns the amount of bytes consumed by the CBT heap
  *
  */
 CBTDEF int64_t cbt_HeapByteSize(const cbt_Tree *tree)
@@ -646,7 +643,7 @@ CBTDEF int64_t cbt_HeapByteSize(const cbt_Tree *tree)
 
 
 /*******************************************************************************
- * UpdateBuffer -- Sums the 2 elements below the current slot
+ * ComputeSumReduction -- Sums the 2 elements below the current slot
  *
  */
 static void cbt__ComputeSumReduction(cbt_Tree *tree)
@@ -781,7 +778,7 @@ CBTDEF void cbt_Release(cbt_Tree *tree)
 
 
 /*******************************************************************************
- * ResetToDepth -- Initializes a LEB to its a specific subdivision level
+ * ResetToDepth -- Initializes a CBT to its a specific subdivision level
  *
  */
 CBTDEF void cbt_ResetToDepth(cbt_Tree *tree, int64_t depth)
@@ -806,7 +803,7 @@ CBT_BARRIER
 
 
 /*******************************************************************************
- * ResetToCeil -- Initializes a LEB to its maximum subdivision level
+ * ResetToCeil -- Initializes a CBT to its maximum subdivision level
  *
  */
 CBTDEF void cbt_ResetToCeil(cbt_Tree *tree)
@@ -816,7 +813,7 @@ CBTDEF void cbt_ResetToCeil(cbt_Tree *tree)
 
 
 /*******************************************************************************
- * ResetToRoot -- Initializes a LEB to its minimum subdivision level
+ * ResetToRoot -- Initializes a CBT to its minimum subdivision level
  *
  */
 CBTDEF void cbt_ResetToRoot(cbt_Tree *tree)
@@ -886,7 +883,7 @@ CBT_BARRIER
 
 
 /*******************************************************************************
- * MaxDepth -- Returns the max LEB depth
+ * MaxDepth -- Returns the max CBT depth
  *
  */
 CBTDEF int64_t cbt_MaxDepth(const cbt_Tree *tree)
@@ -896,7 +893,7 @@ CBTDEF int64_t cbt_MaxDepth(const cbt_Tree *tree)
 
 
 /*******************************************************************************
- * NodeCount -- Returns the number of triangles in the LEB
+ * NodeCount -- Returns the number of triangles in the CBT
  *
  */
 CBTDEF int64_t cbt_NodeCount(const cbt_Tree *tree)
