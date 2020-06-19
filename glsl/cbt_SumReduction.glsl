@@ -16,8 +16,8 @@ void main(void)
 
     if (threadID < cnt) {
         uint nodeID = threadID + cnt;
-        uint x0 = cbt__HeapRead(cbtID, cbt_CreateNode(nodeID << 1u     , u_PassID + 1));
-        uint x1 = cbt__HeapRead(cbtID, cbt_CreateNode(nodeID << 1u | 1u, u_PassID + 1));
+        uint x0 = cbt_HeapRead(cbtID, cbt_CreateNode(nodeID << 1u     , u_PassID + 1));
+        uint x1 = cbt_HeapRead(cbtID, cbt_CreateNode(nodeID << 1u | 1u, u_PassID + 1));
 
         cbt__HeapWrite(cbtID, cbt_CreateNode(nodeID, u_PassID), x0 + x1);
     }
