@@ -171,14 +171,14 @@ cbt_Node cbt_CreateNode(uint id, int depth)
  * ParentNode -- Computes the parent of the input node
  *
  */
-cbt_Node cbt__ParentNode_Fast(in const cbt_Node node)
+cbt_Node cbt_ParentNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode(node.id >> 1, node.depth - 1);
 }
 
 cbt_Node cbt_ParentNode(in const cbt_Node node)
 {
-     return cbt_IsNullNode(node) ? node : cbt__ParentNode_Fast(node);
+     return cbt_IsNullNode(node) ? node : cbt_ParentNode_Fast(node);
 }
 
 
@@ -202,14 +202,14 @@ cbt_Node cbt__CeilNode(const int cbtID, in const cbt_Node node)
  * SiblingNode -- Computes the sibling of the input node
  *
  */
-cbt_Node cbt__SiblingNode_Fast(in const cbt_Node node)
+cbt_Node cbt_SiblingNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode(node.id ^ 1u, node.depth);
 }
 
-cbt_Node cbt__SiblingNode(in const cbt_Node node)
+cbt_Node cbt_SiblingNode(in const cbt_Node node)
 {
-    return cbt_IsNullNode(node) ? node : cbt__SiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt_SiblingNode_Fast(node);
 }
 
 
@@ -217,14 +217,14 @@ cbt_Node cbt__SiblingNode(in const cbt_Node node)
  * RightSiblingNode -- Computes the right sibling of the input node
  *
  */
-cbt_Node cbt__RightSiblingNode_Fast(in const cbt_Node node)
+cbt_Node cbt_RightSiblingNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode(node.id | 1u, node.depth);
 }
 
-cbt_Node cbt__RightSiblingNode(in const cbt_Node node)
+cbt_Node cbt_RightSiblingNode(in const cbt_Node node)
 {
-    return cbt_IsNullNode(node) ? node : cbt__RightSiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt_RightSiblingNode_Fast(node);
 }
 
 
@@ -232,14 +232,14 @@ cbt_Node cbt__RightSiblingNode(in const cbt_Node node)
  * LeftSiblingNode -- Computes the left sibling of the input node
  *
  */
-cbt_Node cbt__LeftSiblingNode_Fast(in const cbt_Node node)
+cbt_Node cbt_LeftSiblingNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode(node.id & (~1u), node.depth);
 }
 
-cbt_Node cbt__LeftSiblingNode(in const cbt_Node node)
+cbt_Node cbt_LeftSiblingNode(in const cbt_Node node)
 {
-    return cbt_IsNullNode(node) ? node : cbt__LeftSiblingNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt_LeftSiblingNode_Fast(node);
 }
 
 
@@ -247,14 +247,14 @@ cbt_Node cbt__LeftSiblingNode(in const cbt_Node node)
  * RightChildNode -- Computes the right child of the input node
  *
  */
-cbt_Node cbt__RightChildNode_Fast(in const cbt_Node node)
+cbt_Node cbt_RightChildNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode((node.id << 1) | 1u, node.depth + 1);
 }
 
-cbt_Node cbt__RightChildNode(in const cbt_Node node)
+cbt_Node cbt_RightChildNode(in const cbt_Node node)
 {
-    return cbt_IsNullNode(node) ? node : cbt__RightChildNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt_RightChildNode_Fast(node);
 }
 
 
@@ -262,14 +262,14 @@ cbt_Node cbt__RightChildNode(in const cbt_Node node)
  * LeftChildNode -- Computes the left child of the input node
  *
  */
-cbt_Node cbt__LeftChildNode_Fast(in const cbt_Node node)
+cbt_Node cbt_LeftChildNode_Fast(in const cbt_Node node)
 {
     return cbt_CreateNode(node.id << 1, node.depth + 1);
 }
 
-cbt_Node cbt__LeftChildNode(in const cbt_Node node)
+cbt_Node cbt_LeftChildNode(in const cbt_Node node)
 {
-    return cbt_IsNullNode(node) ? node : cbt__LeftChildNode_Fast(node);
+    return cbt_IsNullNode(node) ? node : cbt_LeftChildNode_Fast(node);
 }
 
 
@@ -484,7 +484,7 @@ bool cbt_IsLeafNode(const int cbtID, in const cbt_Node node)
  */
 void cbt_SplitNode_Fast(const int cbtID, in const cbt_Node node)
 {
-    cbt__HeapWrite_BitField(cbtID, cbt__RightChildNode(node), 1u);
+    cbt__HeapWrite_BitField(cbtID, cbt_RightChildNode(node), 1u);
 }
 void cbt_SplitNode(const int cbtID, in const cbt_Node node)
 {
@@ -499,7 +499,7 @@ void cbt_SplitNode(const int cbtID, in const cbt_Node node)
  */
 void cbt_MergeNode_Fast(const int cbtID, in const cbt_Node node)
 {
-    cbt__HeapWrite_BitField(cbtID, cbt__RightSiblingNode(node), 0u);
+    cbt__HeapWrite_BitField(cbtID, cbt_RightSiblingNode(node), 0u);
 }
 void cbt_MergeNode(const int cbtID, in const cbt_Node node)
 {
@@ -537,7 +537,7 @@ cbt_Node cbt_DecodeNode(const int cbtID, uint nodeID)
     cbt_Node node = cbt_CreateNode(1u, 0);
 
     while (cbt_HeapRead(cbtID, node) > 1u) {
-        cbt_Node leftChild = cbt__LeftChildNode_Fast(node);
+        cbt_Node leftChild = cbt_LeftChildNode_Fast(node);
         uint cmp = cbt_HeapRead(cbtID, leftChild);
         uint b = nodeID < cmp ? 0u : 1u;
 
@@ -562,7 +562,7 @@ uint cbt_EncodeNode(const int cbtID, in const cbt_Node node)
     cbt_Node nodeIterator = node;
 
     while (nodeIterator.id > 1u) {
-        cbt_Node sibling = cbt__LeftSiblingNode_Fast(nodeIterator);
+        cbt_Node sibling = cbt_LeftSiblingNode_Fast(nodeIterator);
         uint nodeCount = cbt_HeapRead(cbtID, sibling);
 
         nodeID+= (nodeIterator.id & 1u) * nodeCount;
