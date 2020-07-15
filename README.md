@@ -4,7 +4,7 @@ This library provides a concurrent binary tree data-structure suitable for accel
 
 ### Usage
 
-**initialization**
+**Initialization**
 A CBT requires a maximum depth (typically the maximum depth of the subdivision algorithm you're interested in accelerating). 
 ```c
 cbt_Tree *cbt = cbt_Create(myMaximumDepth);
