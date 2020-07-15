@@ -1,6 +1,17 @@
 /* cbt.h - public domain library for building binary trees in parallel
 by Jonathan Dupuy
 
+   Do this:
+      #define CBT_IMPLEMENTATION
+   before you include this file in *one* C or C++ file to create the implementation.
+   
+   // i.e. it should look like this:
+   #include ...
+   #include ...
+   #include ...
+   #define CBT_IMPLEMENTATION
+   #include "cbt.h"
+
    INTERFACING
    define CBT_ASSERT(x) to avoid using assert.h
    define CBT_MALLOC(x) to use your own memory allocator
