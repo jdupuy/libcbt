@@ -1,6 +1,6 @@
 # Concurrent Binary Tree Library
 
-This library provides a concurrent binary tree data-structure suitable for accelerating the processing of subdivision algorithms on multicore processors, including GPUs. More details are available in my paper: "Concurrent Binary Trees (with application to Longest Edge Bisection)".
+This library provides a concurrent binary tree data-structure suitable for accelerating the processing of subdivision algorithms on multicore processors, including GPUs. More details are available in my paper ["Concurrent Binary Trees (with application to Longest Edge Bisection)](https://onrendering.com/).
 
 ### Usage
 
