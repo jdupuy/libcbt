@@ -49,11 +49,17 @@ For a more complex example, see [this repo](https://github.com/jdupuy/LongestEdg
 
 **Queries**
 You can query the number of leaf nodes in the CBT using 
-`int64_t nodeCount = cbt_NodeCount(cbt);`
+```c
+int64_t nodeCount = cbt_NodeCount(cbt);
+```
 You can retrieve the i-th leaf node using 
-`cbt_Node node = cbt_DecodeNode(cbt, i)`
+```c
+cbt_Node node = cbt_DecodeNode(cbt, i);
+```
 Conversely, you can retrieve the index of an existing leaf node using
-`cbt_Node node = cbt_EncodeNode(cbt, i)`
+```c
+cbt_Node node = cbt_EncodeNode(cbt, i);
+```
 
 
 **Serialization**
