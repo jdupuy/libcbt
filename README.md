@@ -6,11 +6,17 @@ This library provides a concurrent binary tree data-structure suitable for accel
 
 **initialization**
 A CBT requires a maximum depth (typically the maximum depth of the subdivision algorithm you're interested in accelerating). 
-`cbt_Tree *cbt = cbt_Create(myMaximumDepth);`
+```c
+cbt_Tree *cbt = cbt_Create(myMaximumDepth);
+```
 Once this depth chosen, it can not be changed throughout the lifetime of the CBT instance. You can query the maximum depth of the CBT as follows
-`maximumDepth = cbt_MaxDepth(cbt);`
+```c
+maximumDepth = cbt_MaxDepth(cbt);
+```
 By default, the CBT will be initialized at the root node. You can also initialize it at an explicit subdivision depth as follows:
-`cbt_Tree *cbt = cbt_CreateAtDepth(myMaximumDepth, myInitializationDepth);`
+```c
+cbt_Tree *cbt = cbt_CreateAtDepth(myMaximumDepth, myInitializationDepth);
+```
 Note that the initialization depth must be less or equal to the maximum depth of the CBT.
 
 **Resetting the tree**
