@@ -81,7 +81,7 @@ For a GPU implementation example, see [this repo](https://github.com/jdupuy/Long
 
 ### License
 
-Apart from the submodule folder, the code from this repository is released in public domain. You can do anything you want with them. You have no legal obligation to do anything else, although I appreciate attribution.
+The code from this repository is released in public domain. You can do anything you want with them. You have no legal obligation to do anything else, although I appreciate attribution.
 
 It is also licensed under the MIT open source license, if you have lawyers who are unhappy with public domain.
 
