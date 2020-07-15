@@ -18,6 +18,10 @@ By default, the CBT will be initialized at the root node. You can also initializ
 cbt_Tree *cbt = cbt_CreateAtDepth(myMaximumDepth, myInitializationDepth);
 ```
 Note that the initialization depth must be less or equal to the maximum depth of the CBT.
+Always remember to release the meomory once you're done with your CBT
+```c
+cbt_Release(cbt);
+```
 
 **Resetting the tree**
 Additionally, you can reset the subdivision by using any of the following routines:
