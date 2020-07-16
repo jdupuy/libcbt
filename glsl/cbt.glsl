@@ -11,7 +11,11 @@ by Jonathan Dupuy
 #   define CBT_HEAP_BUFFER_COUNT 1
 #endif
 layout(std430, binding = CBT_HEAP_BUFFER_BINDING)
+#ifndef CBT_READ_ONLY
 buffer cbt_Buffer {
+#else
+readonly buffer cbt_Buffer {
+#endif
     uint heap[];
 } u_CbtBuffers[CBT_HEAP_BUFFER_COUNT];
 
