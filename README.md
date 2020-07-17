@@ -9,7 +9,7 @@ A CBT requires a maximum depth (typically the maximum depth of the subdivision a
 ```c
 cbt_Tree *cbt = cbt_Create(myMaximumDepth);
 ```
-Once this depth chosen, it can not be changed throughout the lifetime of the CBT instance. You can query the maximum depth of the CBT as follows
+Once this depth chosen, it can not be changed throughout the lifetime of the CBT instance. You can query the maximum depth of the CBT as follows:
 ```c
 maximumDepth = cbt_MaxDepth(cbt);
 ```
@@ -18,7 +18,7 @@ By default, the CBT will be initialized at the root node. You can also initializ
 cbt_Tree *cbt = cbt_CreateAtDepth(myMaximumDepth, myInitializationDepth);
 ```
 Note that the initialization depth must be less or equal to the maximum depth of the CBT.
-Always remember to release the meomory once you're done with your CBT
+Always remember to release the meomory once you're done with your CBT:
 ```c
 cbt_Release(cbt);
 ```
@@ -62,7 +62,7 @@ cbt_Node node = cbt_DecodeNode(cbt, i);
 ```
 Conversely, you can retrieve the index of an existing leaf node using
 ```c
-cbt_Node node = cbt_EncodeNode(cbt, i);
+int64_t nodeID = cbt_EncodeNode(cbt, node);
 ```
 
 
